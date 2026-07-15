@@ -60,7 +60,120 @@ One engine, seven providers — pick in the popup, or add your own OpenAI-compat
 
 Run the eval suite against a real model: `NVIDIA_API_KEY=… npm run eval` (or `PF_PROVIDER=ollama PF_MODEL=llama3.1:8b npm run eval`).
 
-## Repository layout
+## Architecture: one engine, many shells
+
+```
+                        ┌─────────────────────────────┐
+                        │      packages/core/          │  ← THE BRAIN
+                        │  (pure TypeScript, no UI)     │     Nothing works without this
+                        └──────────────┬───────────────┘
+                                       │ imported by every surface
+              ┌────────────────────────┼────────────────────────┐
+              │                        │                        │
+    ┌─────────▼─────────┐   ┌──────────▼──────────┐   ┌─────────▼─────────┐
+    │  extension-browser │   │        cli          │   │  extension-vscode │
+    │  (Chrome/MV3)      │   │  (PTY wrapper)       │   │  (editor shell)   │
+    └────────────────────┘   └──────────────────────┘   └───────────────────┘
+```
+
+**Rule of thumb:** a change to *what* a rewrite does (parsing, providers, token counting) belongs in `packages/core`. A change to *where the user sees it* (button, popup, terminal, editor) belongs in the shell.
+
+### The important folders, ranked by how much they matter
+
+**🥇 `packages/core/src/` — the engine (most important folder in the repo)**
+
+```
+core/src/
+├── prompt-helper/
+│   ├── index.ts        ← refine() — THE main function. Everything calls this.
+│   ├── meta-prompt.ts   ← the instruction sent to the LLM (Appendix A)
+│   ├── parser.ts        ← turns the LLM's raw text into structured JSON
+│   ├── providers.ts     ← the 7-provider catalog + buildLlmCall() + testProvider()
+│   └── templates.ts     ← cheap keyword-based intent guessing (no AI needed)
+├── optimizer/
+│   ├── trim.ts          ← free, instant filler-word removal (pre-clean)
+│   └── compress.ts       ← optional big-prompt compression (Phase 2)
+├── metering/
+│   └── tokenizer.ts     ← ~4-chars/token estimate for the live counter
+└── shared/
+    ├── store.ts          ← EventStore — records accept/edit/dismiss, computes G0 rate
+    └── config-loader.ts  ← versioned remote config (Phase 2, not active yet)
+```
+
+Every shell — extension, CLI, VS Code, the eval runner — imports `refine()` from here and nothing else. Rewrite every shell tomorrow and this folder is the only thing that has to survive unchanged.
+
+**🥈 `packages/adapters/src/` — knows about each AI website**
+
+```
+adapters/src/
+├── anthropic.ts   ← Claude.ai's CSS selectors (input box, send button)
+├── openai.ts      ← ChatGPT's selectors
+├── google.ts, xai.ts, perplexity.ts
+└── index.ts       ← adapterForUrl() — picks the right one by hostname
+```
+
+Only the **browser extension** uses this — CLI and VS Code don't inject into a webpage. If claude.ai changes its HTML, fix one file here; nothing else breaks.
+
+**🥉 `packages/types/src/index.ts` — the shared contract**
+
+One file. Defines `PromptHelperResult`, `LlmConfig`, `PromptEvent`. Every package and shell imports types from here so the JSON shape never drifts between them.
+
+### How each shell calls the engine
+
+**Chrome Extension (`apps/extension-browser/`)** — the one that's actually running:
+
+```
+content/index.tsx  →  user clicks "⚒ Forge"
+        │
+        │  chrome.runtime.sendMessage({type:"pf-rewrite", input, cfg})
+        ▼
+background/index.ts  →  runs refine(input, buildLlmCall(cfg))
+        │                (background worker = no CORS problem, calls NVIDIA/OpenAI directly)
+        ▼
+content/Overlay.tsx  →  renders the result, Accept writes it into the chat box
+        │
+        ▼
+content/model-config.ts + chrome-store.ts  →  saves your provider/model/key + the outcome
+```
+
+Content scripts run *inside* claude.ai's page and inherit its strict CSP + CORS rules. The background service worker is a separate, privileged context — that's the only reason a direct `fetch` to NVIDIA's API works at all.
+
+**CLI (`apps/cli/src/index.ts`)** — thin, reuses core directly:
+
+```
+node-pty spawns the real tool (codex/claude/gemini) in a pseudo-terminal
+        │
+you type → CLI buffers keystrokes → press the refine hotkey (Ctrl-R)
+        │
+        │  calls refine(buffer, backendCall) — SAME function as the extension
+        ▼
+rewritten text is injected back into the wrapped tool's stdin
+```
+
+A Node process has no CORS restrictions at all, so this shell needs no background worker — the least glue code of the three.
+
+**VS Code (`apps/extension-vscode/src/extension.ts`)** — simplest shell:
+
+```
+"Refine Selection" command → reads your text selection
+        │  same refine() + buildLlmCall() from core
+        ▼
+replaces the selection with the rewritten prompt
+```
+
+No popup, no background worker — just one command.
+
+### What's not load-bearing
+
+Skip these when getting oriented — they don't affect the rewrite feature itself:
+- `apps/backend/` — optional hosted-mode proxy; the extension's worker calls providers directly instead
+- `apps/dashboard/`, `apps/landing/` — marketing/analytics
+- `evals/` — test harnesses, not shipped
+- `config/*.json` — bundled defaults for Phase 2's remote config, not active yet
+
+**One-sentence mental model:** `packages/core` is a library that answers *"given messy text and a model config, return a structured rewrite"* — and `extension-browser`, `cli`, and `extension-vscode` are three different UIs that ask it that same question.
+
+### Repository layout
 
 ```
 packages/
