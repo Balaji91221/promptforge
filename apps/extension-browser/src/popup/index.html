@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>PromptForge</title>
+    <style>
+      body { width: 300px; margin: 0; padding: 14px; font-family: system-ui, sans-serif;
+             background: #0E141A; color: #B9C4CE; }
+      h1 { font-size: 14px; color: #14B8A6; margin: 0 0 12px; }
+      label { display: block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+              color: #6C7884; margin: 10px 0 4px; }
+      select, input { width: 100%; background: #11161B; color: #E4E8EC; border: 1px solid #26313B;
+              border-radius: 8px; padding: 7px 8px; font-size: 13px; font-family: inherit; }
+      .hint { font-size: 10.5px; color: #6C7884; margin-top: 3px; }
+      .btns { display: flex; gap: 8px; margin-top: 12px; }
+      .save { flex: 1; background: #14B8A6; color: #06231F; border: none;
+              border-radius: 8px; padding: 9px; font-weight: 700; font-size: 13px; cursor: pointer; }
+      .save.saved { background: #2DD4BF; }
+      .test { background: #11161B; color: #B9C4CE; border: 1px solid #233042;
+              border-radius: 8px; padding: 9px 12px; font-size: 13px; cursor: pointer; }
+      .status { margin-top: 10px; font-size: 12px; border-radius: 8px; padding: 8px 10px;
+                display: none; }
+      .status.show { display: block; }
+      .status.ok { background: rgba(20,184,166,.12); color: #2DD4BF; border: 1px solid rgba(20,184,166,.4); }
+      .status.err { background: rgba(255,90,90,.10); color: #FF8A8A; border: 1px solid rgba(255,90,90,.4); }
+      .status.wait { background: #11161B; color: #F5B544; border: 1px solid #233042; }
+      .status b { color: inherit; }
+      .hide { display: none; }
+      hr { border: none; border-top: 1px solid #26313B; margin: 14px 0; }
+      .row { display: flex; justify-content: space-between; padding: 5px 0;
+             border-bottom: 1px solid #26313B; font-size: 13px; }
+      .row b { color: #E4E8EC; font-variant-numeric: tabular-nums; }
+      .note { color: #6C7884; font-size: 10.5px; margin-top: 10px; }
+    </style>
+  </head>
+  <body>
+    <h1>⚒ PromptForge — Model</h1>
+
+    <label for="provider">Provider</label>
+    <select id="provider"></select>
+
+    <label for="model">Model</label>
+    <select id="model"></select>
+    <input id="modelCustom" class="hide" placeholder="custom model id" />
+
+    <div id="keyWrap">
+      <label for="apiKey">API key</label>
+      <input id="apiKey" type="password" placeholder="key" />
+      <div class="hint" id="keyHint"></div>
+    </div>
+
+    <div id="baseWrap" class="hide">
+      <label for="baseUrl">Base URL</label>
+      <input id="baseUrl" placeholder="https://…/v1" />
+    </div>
+
+    <div class="btns">
+      <button class="save" id="save">Save model</button>
+      <button class="test" id="test">Test</button>
+    </div>
+    <div class="status" id="status"></div>
+
+    <hr />
+    <div id="stats"></div>
+    <p class="note">Local-only. No account, no sync. Keys stay on this device. G0 signals (§7).</p>
+
+    <script type="module" src="./index.ts"></script>
+  </body>
+</html>

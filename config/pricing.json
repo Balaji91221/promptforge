@@ -1,0 +1,18 @@
+{
+  "_comment": "Reference pricing + limit windows (plan §9.3). ALWAYS a labeled reference, never money the user is losing. Versioned; served via Remote Config in Phase 2.",
+  "version": "2026-07-15",
+  "platforms": {
+    "anthropic": {
+      "limitWindows": [{ "label": "5-hour", "cap": 45 }, { "label": "weekly", "cap": 960 }],
+      "priceRefPer1kInput": 0.0008
+    },
+    "openai": {
+      "limitWindows": [{ "label": "3-hour", "cap": 80 }],
+      "priceRefPer1kInput": 0.0005
+    },
+    "google": {
+      "limitWindows": [{ "label": "daily", "cap": 100 }],
+      "priceRefPer1kInput": 0.0004
+    }
+  }
+}

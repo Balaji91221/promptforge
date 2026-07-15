@@ -1,0 +1,13 @@
+{
+  "name": "@promptforge/backend",
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Phase 0: a single serverless function holding the LLM key, forwarding the streamed rewrite call.",
+  "scripts": {
+    "dev": "tsx server.ts"
+  },
+  "dependencies": {
+    "@promptforge/core": "*",
+    "@promptforge/types": "*"
+  }
+}

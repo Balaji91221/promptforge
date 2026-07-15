@@ -1,0 +1,27 @@
+{
+  "_comment": "Versioned platform selectors (plan §9.4, §11). Phase 0: bundled. Phase 2: served from Remote Config so UI changes don't need a release.",
+  "version": "2026-07-15",
+  "metaPromptVersion": "v0.1.0",
+  "selectors": {
+    "anthropic": {
+      "input": "div[contenteditable=\"true\"].ProseMirror",
+      "sendButton": "button[aria-label=\"Send message\"]"
+    },
+    "openai": {
+      "input": "#prompt-textarea",
+      "sendButton": "button[data-testid=\"send-button\"]"
+    },
+    "google": {
+      "input": "div.ql-editor[contenteditable=\"true\"]",
+      "sendButton": "button[aria-label=\"Send message\"]"
+    },
+    "xai": {
+      "input": "textarea[aria-label=\"Ask Grok anything\"], textarea",
+      "sendButton": "button[aria-label=\"Submit\"]"
+    },
+    "perplexity": {
+      "input": "textarea[placeholder], div[contenteditable=\"true\"]",
+      "sendButton": "button[aria-label=\"Submit\"]"
+    }
+  }
+}

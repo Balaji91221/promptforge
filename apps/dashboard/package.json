@@ -1,0 +1,22 @@
+{
+  "name": "@promptforge/dashboard",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Phase 1 web dashboard — cross-platform prompt-quality trend, usage, headroom.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@promptforge/types": "*",
+    "next": "^14.2.15",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "@types/react": "^18.3.12",
+    "typescript": "^5.6.3"
+  }
+}
