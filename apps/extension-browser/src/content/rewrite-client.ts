@@ -1,25 +1,6 @@
-import type { PromptHelperResult } from "@promptforge/types";
-
-// Call the backend rewrite proxy with the chosen provider config (CORS-safe:
-// the browser only talks to our own backend). Returns the parsed result JSON.
-export async function rewriteViaBackend(
-  input: string,
-  cfg: { provider: string; model: string; apiKey?: string; baseUrl?: string },
-): Promise<PromptHelperResult> {
-  const res = await fetch(__PF_API__, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ input, ...cfg }),
-  });
-  if (!res.ok) {
-    const body = (await res.json().catch(() => ({}))) as { error?: string };
-    throw new Error(body.error ?? `http ${res.status}`);
-  }
-  return (await res.json()) as PromptHelperResult;
-}
-
-// Streams the rewrite from the backend and yields accumulated text so the
-// overlay can render as it generates (latency budget §15). Legacy hosted path.
+// Streams the rewrite from the hosted backend and yields accumulated text so
+// the overlay can render as it generates (latency budget §15). Used only when
+// no BYO provider is configured; BYO rewrites run in the background worker.
 
 export interface StreamHandlers {
   onText: (accumulated: string) => void;

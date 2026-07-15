@@ -13,10 +13,13 @@
     "eval": "tsx evals/runner.ts",
     "e2e": "tsc -b packages/types packages/core packages/adapters && tsx evals/e2e-extension.ts",
     "clean": "rm -rf packages/*/dist packages/*/*.tsbuildinfo apps/*/dist apps/*/.next",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "dev:ext": "npm run dev --workspace apps/extension-browser"
   },
   "devDependencies": {
     "tsx": "^4.19.2",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
   }
 }

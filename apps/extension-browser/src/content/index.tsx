@@ -31,6 +31,11 @@ function rewriteViaWorker(input: string, cfg: unknown): Promise<PromptHelperResu
 
 const store = new EventStore(chromeStore);
 
+// Debug logging — off in production; enable via chrome.storage: {pf_debug: true}.
+let DEBUG = false;
+void chrome.storage?.local.get("pf_debug").then((o) => { DEBUG = !!o.pf_debug; }).catch(() => {});
+const debug = (...args: unknown[]) => { if (DEBUG) console.log("[PromptForge]", ...args); };
+
 // True only while this content script's extension context is still alive.
 // After the extension is reloaded/updated, orphaned scripts in open tabs must
 // stop touching chrome.* (which throws "Extension context invalidated").
@@ -105,7 +110,7 @@ function updateCounter() {
 }
 
 function onForge() {
-  console.log("[PromptForge] Forge clicked");
+  debug("Forge clicked");
   if (!extAlive()) { flash("Extension was reloaded — refresh this page (⌘⇧R)."); return; }
   const el = getInputEl();
   if (!el) { flash("Click into the chat box first."); return; }
@@ -185,7 +190,7 @@ function flash(msg: string) {
 
 // ---- Boot ------------------------------------------------------------------
 function boot() {
-  console.log("[PromptForge] content script loaded on", location.host, "· adapter:", PLATFORM);
+  debug("content script loaded on", location.host, "· adapter:", PLATFORM);
   if (!adapter) { console.warn("[PromptForge] no adapter for this host — not injecting"); return; }
   ensureBar();
   // Update the counter on any typing (not just an exact selector match).

@@ -1,74 +1,101 @@
-# PromptForge
+# ⚒ PromptForge
 
-The cross-provider prompt-engineering assistant: rewrite messy input into a
-clear, well-engineered prompt, coach the user toward better prompting, and show
-token usage / headroom — on top of every AI tool they already use.
+**The cross-provider prompt-engineering assistant.** It sits on the input box of every AI chat you use — Claude, ChatGPT, Gemini, Grok, Perplexity — and rewrites your messy input into a clear, well-engineered prompt, coaches you toward better prompting, and tracks your quality trend over time.
 
-This repo implements the full plan (§14 tree), phased. **The shared engine is
-built and verified end-to-end; each surface/cloud service is a working scaffold
-on top of it.** The discipline of the plan holds: nothing past Phase 0 should
-*ship* until the G0 gate (§7) passes — but the code paths are laid down.
+[![CI](https://github.com/Balaji91221/promptforge/actions/workflows/ci.yml/badge.svg)](https://github.com/Balaji91221/promptforge/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-teal.svg)](LICENSE)
 
-## What maps to which phase
+> Type like you talk → tap **⚒ Forge** → accept, edit, or dismiss. Your words leave the device only when you tap.
 
-| Phase | Deliverable | Where |
-|-------|-------------|-------|
-| **0** | Validation MVP: one-platform extension, pre-clean → streamed cheap-LLM call → structured output → accept/edit/dismiss, token counter, local-only storage, eval set | `packages/core`, `apps/extension-browser`, `apps/backend/api/rewrite.ts`, `evals/` |
-| **1** | All web chats + dashboard + accounts/sync + per-intent templates | `packages/adapters` (5 platforms), `apps/dashboard`, `apps/backend/api/{auth,events,analytics}`, `packages/core/.../templates.ts` |
-| **2** | Coach mode + hosted rewrite + deep optimize + Remote Config | `.../settings.ts` + Overlay coach toggle, `apps/backend/api/config`, `packages/core/.../compress.ts`, `.../config-loader.ts` |
-| **3** | VS Code extension | `apps/extension-vscode` |
-| **4** | CLI shims (Codex/Gemini/Grok/Claude Code) | `apps/cli` |
-| **5** | Teams — shared dashboards, quality reporting, SSO | `apps/backend/api/orgs`, `db/schema.sql` (orgs/org_members) |
+## How it works
 
-## Layout (§14)
+```
+you type            content script          background worker         any LLM provider
+"help me fix    →   ⚒ Forge button      →   refine() pipeline     →   NVIDIA · OpenAI ·
+ my resume..."      + token counter         pre-clean → LLM call      Anthropic · Ollama ·
+                                            → parse → token delta     HuggingFace · custom
+                                                    ↓
+                    overlay: refined prompt + "what changed" + coach tips
+                    → Accept writes it into the chat box
+                    → outcome stored locally (acceptance-rate signal)
+```
+
+- **Rewrite** — raw input becomes a complete prompt; every constraint preserved, nothing invented.
+- **Coach** — inline tips on what's still missing, so you *learn* prompt engineering.
+- **Measure** — acceptance rate, edit rate, quality trend. Behavioral truth, not model self-grades.
+- **Local-first** — no account, no sync; events and API keys stay in `chrome.storage` on your device.
+
+## Quick start
+
+```bash
+git clone https://github.com/Balaji91221/promptforge && cd promptforge
+npm install
+
+npm test          # 54 unit tests (engine)
+npm run e2e       # end-to-end: mock provider → stream → parse → store → G0 signal
+npm run eval      # meta-prompt eval suite (dry without a key)
+
+# build the extension
+npx tsc -b packages/types packages/core packages/adapters
+npm run build --workspace apps/extension-browser
+```
+
+**Install the extension:** `chrome://extensions` → enable *Developer mode* → *Load unpacked* → select `apps/extension-browser/dist`. Then open the popup, pick a provider + model (NVIDIA NIM's free `llama-3.1-8b-instruct` is the recommended default), paste your API key, hit **Save** — the popup verifies the connection live (🟢 *Connected*). Visit claude.ai (or any supported chat), type, and tap **⚒ Forge prompt**.
+
+The rewrite runs in the extension's background service worker, which calls the provider directly — no server required.
+
+## Model providers
+
+One engine, seven providers — pick in the popup, or add your own OpenAI-compatible endpoint:
+
+| Provider | Recommended model | Key |
+|---|---|---|
+| **NVIDIA NIM** (free) | `meta/llama-3.1-8b-instruct` | `nvapi-…` |
+| OpenAI | `gpt-4o-mini` | `sk-…` |
+| Anthropic | `claude-haiku-4-5` | `sk-ant-…` |
+| Ollama (local) | `llama3.1:8b` | none |
+| HuggingFace | `Llama-3.3-70B-Instruct` | `hf_…` |
+| OpenRouter | any OSS model | `sk-or-…` |
+| Custom | any OpenAI-compatible | optional |
+
+Run the eval suite against a real model: `NVIDIA_API_KEY=… npm run eval` (or `PF_PROVIDER=ollama PF_MODEL=llama3.1:8b npm run eval`).
+
+## Repository layout
 
 ```
 packages/
-  types/        shared types + output schema (Appendix B)
-  core/         the engine — isomorphic TypeScript, verified
-    prompt-helper/  meta-prompt (Appendix A), parser, templates, orchestration
-    optimizer/      rule trim (pre-clean) + compression (LLMLingua-style)
-    metering/       token estimator
-    shared/         local EventStore (ground-truth outcomes) + config loader
-  adapters/     Claude · ChatGPT · Gemini · Grok · Perplexity
+  core/        the engine (isomorphic TS): prompt-helper · optimizer · metering · providers · store
+  adapters/    per-platform DOM adapters (Claude, ChatGPT, Gemini, Grok, Perplexity)
+  types/       shared types + output schema
 apps/
-  extension-browser/  MV3 + TS + React (Vite + CRXJS) — token counter, overlay, coach
-  dashboard/          Next.js — quality trend (inline SVG) + G0/G1 signal tiles
-  backend/            serverless fns: rewrite · auth · events · config · analytics · orgs; Postgres schema
-  extension-vscode/   status-bar token count + "Refine Selection"
-  cli/                PTY shim that refines the input line before send
-  landing/            Next.js marketing site — parallax hero, live rewrite demo, self-hosted fonts
-evals/          meta-prompt eval set (Appendix C) + runner
-config/         versioned selectors + pricing refs (bundled now, remote in Phase 2)
+  extension-browser/  MV3 shell — content script, worker, popup (Vite + CRXJS)
+  dashboard/          Next.js — quality trend + usage signals
+  landing/            Next.js marketing site
+  backend/            optional hosted-mode proxy + Postgres schema (Phase 1+)
+  extension-vscode/   VS Code shell (Phase 3)
+  cli/                PTY shim for CLI tools (Phase 4)
+evals/         meta-prompt eval suite + e2e harness
+config/        versioned selectors & pricing references
 ```
 
-## Run it
+The build is phased behind **validation gates**: nothing past the Phase 0 MVP ships until real usage clears a ≥40% rewrite-acceptance rate (the G0 signal shown in the popup). See the plan document for the full roadmap.
+
+## Development
 
 ```bash
-npm install                 # links workspaces
-npm run eval                # validates the harness (dry without a key)
-ANTHROPIC_API_KEY=sk-... npm run eval   # runs the meta-prompt against the suite
-npx tsc -b packages/types packages/core packages/adapters   # typecheck the engine
-
-# Backend: deploy apps/backend/api/*.ts to any edge/serverless host (ANTHROPIC_API_KEY set).
-# Extension: PF_API=<url> npm run build --workspace apps/extension-browser
-#            then load apps/extension-browser/dist as an unpacked extension.
-# Dashboard: (cd apps/dashboard && npm install && npm run dev)
+npm test                                   # unit tests (Vitest)
+npm run e2e                                # full-pipeline test, no key needed
+npm run clean                              # remove all build output
+npm run dev --workspace apps/backend       # optional local hosted-mode proxy
+npm run dev --workspace apps/landing       # marketing site on :3000
 ```
 
-> App workspaces (extension, dashboard, vscode, cli) pull their own external
-> deps (@types/chrome, next, vscode, node-pty) on first `npm install` in each.
-> The **engine** — the shared, testable heart — is verified here without them.
+Guardrails baked in: opt-in button only · length gate (no LLM call on trivial input) · original always kept, diff always shown · 30s provider timeout · minimal host permissions (never `<all_urls>`).
 
-## What proves Phase 0 (the G0 gate, §7)
+## Privacy
 
-The extension popup and the dashboard both surface only the signals that matter:
-**acceptance rate** (target ≥ 40%), rewrites, platforms used, tokens saved — all
-behavioral. LLM "quality" scores are labeled *estimated* and are never the truth.
+Local-first by design. The text you're typing is read only from the input box of supported sites and leaves your device only when you explicitly tap Forge — and then only to the model provider *you* configured with *your* key. No accounts, no telemetry, no third-party storage.
 
-## Guardrails carried through (§9.1, §15, §16, §17)
+## License
 
-Opt-in button · length gate (no AI call on trivial input) · always keep the
-original + show the diff · stream the rewrite (first token ≤ 1s budget) ·
-minimal host permissions, never `<all_urls>` · local-first, text leaves the
-device only on an explicit tap · every meta-prompt change is eval-gated.
+[MIT](LICENSE) © Balaji91221

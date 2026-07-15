@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: Typecheck · unit · e2e
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Typecheck engine packages
+        run: npx tsc -b packages/types packages/core packages/adapters
+      - name: Unit tests
+        run: npm test
+      - name: End-to-end (mock provider)
+        run: npx tsx evals/e2e-extension.ts
+      - name: Eval harness (dry run)
+        run: npm run eval
+
+  build:
+    name: Build extension · dashboard · landing
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build engine packages
+        run: npx tsc -b packages/types packages/core packages/adapters
+      - name: Build browser extension
+        run: npm run build --workspace apps/extension-browser
+      - name: Build dashboard
+        run: npm run build --workspace apps/dashboard
+      - name: Build landing
+        run: npm run build --workspace apps/landing
+      - name: Upload extension artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-dist
+          path: apps/extension-browser/dist
