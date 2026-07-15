@@ -1,7 +1,7 @@
 {
   "_comment": "Versioned platform selectors (plan §9.4, §11). Phase 0: bundled. Phase 2: served from Remote Config so UI changes don't need a release.",
-  "version": "2026-07-15",
-  "metaPromptVersion": "v0.1.0",
+  "version": "2026-07-15.2",
+  "metaPromptVersion": "v0.2.0",
   "selectors": {
     "anthropic": {
       "input": "div[contenteditable=\"true\"].ProseMirror",

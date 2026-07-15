@@ -12,7 +12,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { refine, buildLlmCall, PROVIDERS, defaultConfig, type LlmCall, type LlmConfig, type ProviderId } from "@promptforge/core";
+import { refine, isDeflection, buildLlmCall, PROVIDERS, defaultConfig, type LlmCall, type LlmConfig, type ProviderId } from "@promptforge/core";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -71,6 +71,11 @@ function checkCase(c: Case, refined: string, intent: string, techniques: string[
   // imperative framing) flag the "answering instead of rewriting" cases.
   if (c.must_not.includes("answering instead of rewriting") && c.raw_input.length < 8 && refined.length > 200) {
     failures.push("looks like it answered a trivial input instead of leaving it alone");
+  }
+  // Deflection: the refined prompt must be a directive, never a message asking
+  // the assistant what it needs (the failure mode fixed in meta-prompt v0.2.0).
+  if (isDeflection(refined)) {
+    failures.push("deflected — asked the assistant for help instead of forging a prompt");
   }
 
   return { id: c.id, category: c.category, ok: failures.length === 0, failures };

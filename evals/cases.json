@@ -5,7 +5,9 @@
     "language": "en",
     "category": "trivial",
     "must_preserve": [],
-    "must_not": ["answering instead of rewriting"],
+    "must_not": [
+      "answering instead of rewriting"
+    ],
     "expect_intent": "other",
     "expect_techniques_any": []
   },
@@ -14,70 +16,138 @@
     "raw_input": "summarize this article for me pls its really long and i dont have time",
     "language": "en",
     "category": "summarize",
-    "must_preserve": ["summarize"],
-    "must_not": ["invented facts", "answering instead of rewriting"],
+    "must_preserve": [
+      "summarize"
+    ],
+    "must_not": [
+      "invented facts",
+      "answering instead of rewriting"
+    ],
     "expect_intent": "summarize",
-    "expect_techniques_any": ["clarity", "output format", "constraints"]
+    "expect_techniques_any": [
+      "clarity",
+      "output format",
+      "constraints"
+    ]
   },
   {
     "id": "eval-003",
     "raw_input": "hey can u make my resume better i have 3 yrs exp in java and spring boot and i want a job at a fintech",
     "language": "en",
     "category": "constraint-heavy",
-    "must_preserve": ["3", "java", "spring", "fintech"],
-    "must_not": ["invented employers", "changed intent", "answering instead of rewriting"],
+    "must_preserve": [
+      "3",
+      "java",
+      "spring",
+      "fintech"
+    ],
+    "must_not": [
+      "invented employers",
+      "changed intent",
+      "answering instead of rewriting"
+    ],
     "expect_intent": "other",
-    "expect_techniques_any": ["clarity", "output format", "context"]
+    "expect_techniques_any": [
+      "clarity",
+      "output format",
+      "context"
+    ]
   },
   {
     "id": "eval-004",
     "raw_input": "write me a python function that dedupes a list but keeps order",
     "language": "en",
     "category": "code",
-    "must_preserve": ["python", "order"],
-    "must_not": ["answering instead of rewriting"],
+    "must_preserve": [
+      "python",
+      "order"
+    ],
+    "must_not": [
+      "answering instead of rewriting"
+    ],
     "expect_intent": "code",
-    "expect_techniques_any": ["clarity", "constraints", "examples"]
+    "expect_techniques_any": [
+      "clarity",
+      "constraints",
+      "examples"
+    ]
   },
   {
     "id": "eval-005",
     "raw_input": "draft an email to my landlord asking to fix the heater, be polite but firm, i reported it twice already",
     "language": "en",
     "category": "email",
-    "must_preserve": ["landlord", "heater", "twice"],
-    "must_not": ["invented facts", "answering instead of rewriting"],
+    "must_preserve": [
+      "landlord",
+      "heater",
+      "twice"
+    ],
+    "must_not": [
+      "invented facts",
+      "answering instead of rewriting"
+    ],
     "expect_intent": "email",
-    "expect_techniques_any": ["tone", "constraints", "context"]
+    "expect_techniques_any": [
+      "tone",
+      "constraints",
+      "context"
+    ]
   },
   {
     "id": "eval-006",
     "raw_input": "explain how https works like im 12",
     "language": "en",
     "category": "explain",
-    "must_preserve": ["https", "12"],
-    "must_not": ["answering instead of rewriting"],
+    "must_preserve": [
+      "https",
+      "12"
+    ],
+    "must_not": [
+      "answering instead of rewriting"
+    ],
     "expect_intent": "explain",
-    "expect_techniques_any": ["audience", "clarity"]
+    "expect_techniques_any": [
+      "audience",
+      "clarity"
+    ]
   },
   {
     "id": "eval-007",
     "raw_input": "என் கடையை பத்தி ஒரு விளம்பர வாசகம் எழுது, நாங்க புது காபி கடை",
     "language": "ta",
     "category": "non-english",
-    "must_preserve": ["காபி"],
-    "must_not": ["changed language to english", "answering instead of rewriting"],
+    "must_preserve": [
+      "காபி"
+    ],
+    "must_not": [
+      "changed language to english",
+      "answering instead of rewriting"
+    ],
     "expect_intent": "other",
-    "expect_techniques_any": ["clarity", "context"]
+    "expect_techniques_any": [
+      "clarity",
+      "context"
+    ]
   },
   {
     "id": "eval-008",
     "raw_input": "mujhe ek trip plan karni hai goa ke liye 3 din ke liye budget 20000",
     "language": "hi",
     "category": "non-english",
-    "must_preserve": ["goa", "20000", "3"],
-    "must_not": ["changed language to english", "answering instead of rewriting"],
+    "must_preserve": [
+      "goa",
+      "20000",
+      "3"
+    ],
+    "must_not": [
+      "changed language to english",
+      "answering instead of rewriting"
+    ],
     "expect_intent": "other",
-    "expect_techniques_any": ["constraints", "context"]
+    "expect_techniques_any": [
+      "constraints",
+      "context"
+    ]
   },
   {
     "id": "eval-009",
@@ -85,7 +155,9 @@
     "language": "en",
     "category": "trap",
     "must_preserve": [],
-    "must_not": ["answering instead of rewriting"],
+    "must_not": [
+      "answering instead of rewriting"
+    ],
     "expect_intent": "other",
     "expect_techniques_any": []
   },
@@ -94,9 +166,49 @@
     "raw_input": "i need to um like basically write a research summary on uh the effects of caffeine on sleep for like a college paper and it needs sources and its due friday",
     "language": "en",
     "category": "messy-long",
-    "must_preserve": ["caffeine", "sleep", "sources"],
-    "must_not": ["invented facts", "answering instead of rewriting"],
+    "must_preserve": [
+      "caffeine",
+      "sleep",
+      "sources"
+    ],
+    "must_not": [
+      "invented facts",
+      "answering instead of rewriting"
+    ],
     "expect_intent": "research",
-    "expect_techniques_any": ["clarity", "structure", "success criteria", "constraints"]
+    "expect_techniques_any": [
+      "clarity",
+      "structure",
+      "success criteria",
+      "constraints"
+    ]
+  },
+  {
+    "id": "eval-011",
+    "raw_input": "i need help. sduhosdho",
+    "language": "en",
+    "category": "trap",
+    "must_preserve": [],
+    "must_not": [
+      "answering instead of rewriting",
+      "deflecting to ask what the assistant needs"
+    ],
+    "expect_intent": "other",
+    "expect_techniques_any": []
+  },
+  {
+    "id": "eval-012",
+    "raw_input": "i am planning to make it graphql jb bnv",
+    "language": "en",
+    "category": "trap",
+    "must_preserve": [
+      "graphql"
+    ],
+    "must_not": [
+      "answering instead of rewriting",
+      "deflecting to ask what the assistant needs"
+    ],
+    "expect_intent": "other",
+    "expect_techniques_any": []
   }
 ]

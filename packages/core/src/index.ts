@@ -1,5 +1,5 @@
 // @promptforge/core — public surface.
-export { refine, MIN_CHARS_FOR_REWRITE } from "./prompt-helper/index.js";
+export { refine, MIN_CHARS_FOR_REWRITE, isDeflection } from "./prompt-helper/index.js";
 export type { LlmCall, RefineOutput, RefineStatus } from "./prompt-helper/index.js";
 export { META_PROMPT, META_PROMPT_VERSION, buildUserTurn } from "./prompt-helper/meta-prompt.js";
 export { parseResult, extractJson, ParseError } from "./prompt-helper/parser.js";
