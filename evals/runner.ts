@@ -57,7 +57,7 @@ interface CaseResult {
   failures: string[];
 }
 
-function checkCase(c: Case, refined: string, intent: string, techniques: string[]): CaseResult {
+function checkCase(c: Case, refined: string, intent: string, _techniques: string[]): CaseResult {
   const failures: string[] = [];
   const hay = refined.toLowerCase();
 

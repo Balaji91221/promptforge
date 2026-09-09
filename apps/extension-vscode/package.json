@@ -4,17 +4,27 @@
   "description": "Refine prompts and count tokens right in your editor.",
   "version": "0.0.1",
   "publisher": "promptforge",
-  "engines": { "vscode": "^1.90.0" },
-  "categories": ["Other"],
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
   "main": "./dist/extension.js",
-  "activationEvents": ["onStartupFinished"],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "contributes": {
     "commands": [
-      { "command": "promptforge.refineSelection", "title": "PromptForge: Refine Selection" }
+      {
+        "command": "promptforge.refineSelection",
+        "title": "PromptForge: Refine Selection"
+      }
     ]
   },
   "scripts": {
-    "build": "tsc -p ."
+    "build": "tsc -p .",
+    "typecheck": "tsc -p . --noEmit"
   },
   "dependencies": {
     "@promptforge/core": "*",

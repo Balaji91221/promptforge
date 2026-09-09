@@ -58,9 +58,19 @@ suggestions = things you deliberately did NOT add but the user might want
 
 Output valid JSON only. No preamble, no markdown fences.`;
 
+/** Describes attached data the model will NOT see (paste mode, §9.2). */
+export type AttachmentNote = { itemCount: number; tokens: number };
+
 /** Build the user-turn content sent alongside META_PROMPT (system).
- *  An optional intent hint (from the template selector) sharpens the rewrite. */
-export function buildUserTurn(cleanedInput: string, hint?: string): string {
+ *  An optional intent hint (from the template selector) sharpens the rewrite.
+ *  An optional attachment note tells the model that data follows its output,
+ *  so it writes "the data below" instead of trying to reproduce the paste. */
+export function buildUserTurn(cleanedInput: string, hint?: string, attachment?: AttachmentNote): string {
   const focus = hint ? `\n\nFOCUS HINT (from intent detection): ${hint}` : "";
-  return `RAW INPUT:\n"""\n${cleanedInput}\n"""${focus}`;
+  const attached = attachment
+    ? `\n\nATTACHED DATA (not shown to you): a JSON array with ${attachment.itemCount} items ` +
+      `(~${attachment.tokens} tokens). It will be appended verbatim after your refined_prompt. ` +
+      `Refer to it as "the data below". Do not reproduce, summarize, or invent any of it.`
+    : "";
+  return `RAW INPUT:\n"""\n${cleanedInput}\n"""${focus}${attached}`;
 }

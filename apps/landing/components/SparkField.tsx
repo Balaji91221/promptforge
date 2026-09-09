@@ -18,7 +18,6 @@ export function SparkField() {
       r: 0.6 + Math.random() * 1.8, vy: 0.15 + Math.random() * 0.5,
     }));
 
-    let i = 0;
     const frame = () => {
       ctx.clearRect(0, 0, W, H);
       parts.forEach((p, idx) => {
@@ -36,7 +35,6 @@ export function SparkField() {
         ctx.fillStyle = `rgba(${r},${g},${b},${0.1 + p.z * 0.5})`;
         ctx.fill();
       });
-      i++;
       raf = requestAnimationFrame(frame);
     };
     frame();

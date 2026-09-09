@@ -9,6 +9,7 @@
 //
 // On the refine hotkey, the current input buffer is rewritten in place.
 import { refine, ruleTrim, MIN_CHARS_FOR_REWRITE } from "@promptforge/core";
+import type * as NodePty from "node-pty";
 
 const API = process.env.PF_API ?? "http://localhost:3000/api/rewrite";
 
@@ -52,7 +53,7 @@ async function main() {
 
   // node-pty is loaded lazily so the package installs even where native builds
   // are unavailable; without it we exit with a clear message (graceful degrade).
-  let pty: typeof import("node-pty");
+  let pty: typeof NodePty;
   try {
     pty = await import("node-pty");
   } catch {

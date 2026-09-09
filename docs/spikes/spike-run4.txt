@@ -1,0 +1,7 @@
+P4 500-item JSON   29220 → 14736  saved 50%  873ms  transforms=router:mixed:0.41
+   ids kept: 500/500 | 2000-char string intact: true | longest run of big-string kept: 2000 chars
+   'Report 499' present: true | 'doc-000250' present: true
+P4b same, warm     29220 → 14736  60ms
+P5 tool-result     29239 → 14755  saved 50%  64ms  transforms=router:mixed:0.41
+   tool payload starts with quote? false | literal \n: 0 | real newlines: 501 | ids kept: 500/500
+   head: "[500]{body:string,id:string,score:json,tags:json,title:string}\nshort body 0,doc-000000,1,\"[\"\"metrics\"\",\"\"quarterly\"\"]\",Report 0\nshort body 1"

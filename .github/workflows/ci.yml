@@ -3,9 +3,29 @@ name: CI
 on:
   push:
     branches: [main]
+    tags: ["v*"]
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+
   test:
     name: Typecheck · unit · e2e
     runs-on: ubuntu-latest
@@ -13,15 +33,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - name: Typecheck engine packages
-        run: npx tsc -b packages/types packages/core packages/adapters
+      - name: Typecheck (engine packages + every app shell)
+        run: npm run typecheck
       - name: Unit tests
         run: npm test
       - name: End-to-end (mock provider)
-        run: npx tsx evals/e2e-extension.ts
+        run: npm run e2e
       - name: Eval harness (dry run)
         run: npm run eval
 
@@ -32,11 +52,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: .nvmrc
           cache: npm
       - run: npm ci
       - name: Build engine packages
-        run: npx tsc -b packages/types packages/core packages/adapters
+        run: npm run build:engine
       - name: Build browser extension
         run: npm run build --workspace apps/extension-browser
       - name: Build dashboard
@@ -48,3 +68,4 @@ jobs:
         with:
           name: extension-dist
           path: apps/extension-browser/dist
+          if-no-files-found: error

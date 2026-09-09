@@ -1,0 +1,62 @@
+name: Bug report
+description: Something is broken or behaves unexpectedly
+title: "[bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this. Please **remove any API keys or personal text** from logs and screenshots before posting.
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Which part is affected?
+      options:
+        - Browser extension (Chrome)
+        - Engine (packages/core)
+        - Adapters (packages/adapters)
+        - CLI shell
+        - VS Code shell
+        - Backend proxy
+        - Dashboard or landing site
+        - Build / CI / tooling
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you see, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open claude.ai and type "…"
+        2. Tap ⚒ Forge
+        3. See error "…"
+    validations:
+      required: true
+  - type: input
+    id: provider
+    attributes:
+      label: Provider and model
+      placeholder: e.g. NVIDIA NIM · meta/llama-3.1-8b-instruct
+  - type: input
+    id: site
+    attributes:
+      label: Chat site (if extension)
+      placeholder: e.g. claude.ai, chatgpt.com
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      placeholder: "Chrome 130 · macOS 15 · Node 22.9 · commit abc1234"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console output or logs
+      description: Extension logs appear in the service-worker console at chrome://extensions. Keys redacted, please.
+      render: shell

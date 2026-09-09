@@ -31,6 +31,11 @@
              border-bottom: 1px solid #26313B; font-size: 13px; }
       .row b { color: #E4E8EC; font-variant-numeric: tabular-nums; }
       .note { color: #6C7884; font-size: 10.5px; margin-top: 10px; }
+      .check { display: flex; align-items: center; gap: 8px; text-transform: none; letter-spacing: 0;
+               font-size: 12.5px; color: #B9C4CE; cursor: pointer; }
+      .check input { width: auto; margin: 0; }
+      code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10.5px;
+             background: #11161B; border: 1px solid #26313B; border-radius: 4px; padding: 1px 4px; }
     </style>
   </head>
   <body>
@@ -59,6 +64,24 @@
       <button class="test" id="test">Test</button>
     </div>
     <div class="status" id="status"></div>
+
+    <hr />
+    <h1>Compression</h1>
+    <label class="check"><input type="checkbox" id="cmpEnabled" /> Compress large JSON pastes on-device</label>
+    <div id="cmpWrap">
+      <label for="cmpEngine">Engine</label>
+      <select id="cmpEngine">
+        <option value="builtin">Built-in — nothing to install, lossless table encoding</option>
+        <option value="headroom">Headroom proxy — external, runs on this device</option>
+      </select>
+      <div id="hrWrap" class="hide">
+        <label for="hrUrl">Headroom proxy URL</label>
+        <input id="hrUrl" placeholder="http://127.0.0.1:8787" />
+        <div class="hint">Install <code>pip install "headroom-ai[proxy]"</code>, then run <code>headroom proxy</code>.</div>
+        <div class="btns"><button class="test" id="hrTest">Check proxy</button></div>
+        <div class="status" id="hrStatus"></div>
+      </div>
+    </div>
 
     <hr />
     <div id="stats"></div>

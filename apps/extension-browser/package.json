@@ -5,7 +5,8 @@
   "description": "Phase 0 browser shell (MV3). One platform: Claude.ai.",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build"
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@promptforge/adapters": "*",

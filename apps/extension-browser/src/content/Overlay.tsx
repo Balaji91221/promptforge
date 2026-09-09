@@ -90,6 +90,15 @@ export function Overlay({ rawInput, coach = true, refineFn, onOutcome, onClose }
             <span>~{before} → {after} tokens</span>
             <span>quality (est.) {result.quality_before} → {result.quality_after}</span>
           </div>
+          {result.compression && (
+            <div style={S.meta} title={result.compression.transforms.join(", ")}>
+              <span>
+                attached data {result.compression.tokens_before.toLocaleString()} →{" "}
+                {result.compression.tokens_after.toLocaleString()} tokens
+              </span>
+              <span>compressed on-device · {result.compression.provider === "builtin" ? "built-in" : "Headroom"}</span>
+            </div>
+          )}
 
           {result.applied_techniques.length > 0 && (
             <Section title="What changed" items={result.applied_techniques} />

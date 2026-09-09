@@ -210,5 +210,27 @@
     ],
     "expect_intent": "other",
     "expect_techniques_any": []
+  },
+  {
+    "id": "eval-013",
+    "raw_input": "summarize the most relevant of these for a non-technical manager, 3 bullets max\n\n[\n  {\n    \"id\": \"doc-000000\",\n    \"title\": \"Report 0: weekly metrics digest\",\n    \"score\": 0.97,\n    \"tags\": [\n      \"metrics\",\n      \"quarterly\"\n    ]\n  },\n  {\n    \"id\": \"doc-000001\",\n    \"title\": \"Report 1: weekly metrics digest\",\n    \"score\": 0.94,\n    \"tags\": [\n      \"metrics\",\n      \"weekly\"\n    ]\n  },\n  {\n    \"id\": \"doc-000002\",\n    \"title\": \"Report 2: weekly metrics digest\",\n    \"score\": 0.91,\n    \"tags\": [\n      \"metrics\",\n      \"quarterly\"\n    ]\n  },\n  {\n    \"id\": \"doc-000003\",\n    \"title\": \"Report 3: weekly metrics digest\",\n    \"score\": 0.88,\n    \"tags\": [\n      \"metrics\",\n      \"weekly\"\n    ]\n  },\n  {\n    \"id\": \"doc-000004\",\n    \"title\": \"Report 4: weekly metrics digest\",\n    \"score\": 0.85,\n    \"tags\": [\n      \"metrics\",\n      \"quarterly\"\n    ]\n  },\n  {\n    \"id\": \"doc-000005\",\n    \"title\": \"Report 5: weekly metrics digest\",\n    \"score\": 0.82,\n    \"tags\": [\n      \"metrics\",\n      \"weekly\"\n    ]\n  },\n  {\n    \"id\": \"doc-000006\",\n    \"title\": \"Report 6: weekly metrics digest\",\n    \"score\": 0.79,\n    \"tags\": [\n      \"metrics\",\n      \"quarterly\"\n    ]\n  },\n  {\n    \"id\": \"doc-000007\",\n    \"title\": \"Quarterly churn drivers in the SMB segment\",\n    \"score\": 0.76,\n    \"tags\": [\n      \"metrics\",\n      \"weekly\"\n    ]\n  },\n  {\n    \"id\": \"doc-000008\",\n    \"title\": \"Report 8: weekly metrics digest\",\n    \"score\": 0.73,\n    \"tags\": [\n      \"metrics\",\n      \"quarterly\"\n    ]\n  },\n  {\n    \"id\": \"doc-000009\",\n    \"title\": \"Report 9: weekly metrics digest\",\n    \"score\": 0.7,\n    \"tags\": [\n      \"metrics\",\n      \"weekly\"\n    ]\n  },\n  {\n    \"id\": \"doc-000010\",\n    \"title\": \"Report 10: weekly metrics digest\",\n    \"score\": 0.67,\n    \"tags\": [\n      \"metrics\",\n      \"quarterly\"\n    ]\n  },\n  {\n    \"id\": \"doc-000011\",\n    \"title\": \"Report 11: weekly metrics digest\",\n    \"score\": 0.64,\n    \"tags\": [\n      \"metrics\",\n      \"weekly\"\n    ]\n  },\n  {\n    \"id\": \"doc-000012\",\n    \"title\": \"Report 12: weekly metrics digest\",\n    \"score\": 0.61,\n    \"tags\": [\n      \"metrics\",\n      \"quarterly\"\n    ]\n  },\n  {\n    \"id\": \"doc-000013\",\n    \"title\": \"Report 13: weekly metrics digest\",\n    \"score\": 0.58,\n    \"tags\": [\n      \"metrics\",\n      \"weekly\"\n    ]\n  },\n  {\n    \"id\": \"doc-000014\",\n    \"title\": \"Report 14: weekly metrics digest\",\n    \"score\": 0.55,\n    \"tags\": [\n      \"metrics\",\n      \"quarterly\"\n    ]\n  },\n  {\n    \"id\": \"doc-000015\",\n    \"title\": \"Report 15: weekly metrics digest\",\n    \"score\": 0.52,\n    \"tags\": [\n      \"metrics\",\n      \"weekly\"\n    ]\n  }\n]",
+    "language": "en",
+    "category": "paste",
+    "must_preserve": [
+      "non-technical manager",
+      "3 bullets",
+      "doc-000007",
+      "Quarterly churn drivers"
+    ],
+    "must_not": [
+      "invented facts",
+      "reproducing the data inside the instruction"
+    ],
+    "expect_intent": "summarize",
+    "expect_techniques_any": [
+      "audience",
+      "output format",
+      "clarity"
+    ]
   }
 ]

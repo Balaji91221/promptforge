@@ -1,9 +1,21 @@
+<div align="center">
+
 # ⚒ PromptForge
 
-**The cross-provider prompt-engineering assistant.** It sits on the input box of every AI chat you use — Claude, ChatGPT, Gemini, Grok, Perplexity — and rewrites your messy input into a clear, well-engineered prompt, coaches you toward better prompting, and tracks your quality trend over time.
+**The cross-provider prompt-engineering assistant.**
+
+It sits on the input box of every AI chat you use — Claude, ChatGPT, Gemini, Grok, Perplexity — and rewrites your messy input into a clear, well-engineered prompt, coaches you toward better prompting, and tracks your quality trend over time.
 
 [![CI](https://github.com/Balaji91221/promptforge/actions/workflows/ci.yml/badge.svg)](https://github.com/Balaji91221/promptforge/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-teal.svg)](LICENSE)
+[![Node ≥ 22](https://img.shields.io/badge/node-%3E%3D22-339933?logo=node.js&logoColor=white)](.nvmrc)
+[![TypeScript strict](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](tsconfig.base.json)
+[![Chrome MV3](https://img.shields.io/badge/Chrome-MV3-4285F4?logo=googlechrome&logoColor=white)](apps/extension-browser)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-14B8A6.svg)](CONTRIBUTING.md)
+
+[Quick start](#quick-start) · [Providers](#model-providers) · [Architecture](#architecture) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md)
+
+</div>
 
 > Type like you talk → tap **⚒ Forge** → accept, edit, or dismiss. Your words leave the device only when you tap.
 
@@ -24,29 +36,40 @@ you type            content script          background worker         any LLM pr
 - **Coach** — inline tips on what's still missing, so you *learn* prompt engineering.
 - **Measure** — acceptance rate, edit rate, quality trend. Behavioral truth, not model self-grades.
 - **Local-first** — no account, no sync; events and API keys stay in `chrome.storage` on your device.
+- **Bring your own model** — seven providers, including a free tier and fully local Ollama.
+- **Long pastes stay intact and get smaller** — paste a big JSON array, and only your instruction is rewritten; the data is re-encoded on-device into a compact table (about half the tokens, every value kept). Nothing to install.
 
 ## Quick start
 
+Requires **Node.js 22+** (see `.nvmrc`) and a Chromium browser.
+
 ```bash
-git clone https://github.com/Balaji91221/promptforge && cd promptforge
+git clone https://github.com/Balaji91221/promptforge.git && cd promptforge
 npm install
 
-npm test          # 54 unit tests (engine)
-npm run e2e       # end-to-end: mock provider → stream → parse → store → G0 signal
-npm run eval      # meta-prompt eval suite (dry without a key)
+npm run lint        # ESLint across every workspace
+npm run typecheck   # engine packages + every app shell
+npm test            # unit tests (Vitest)
+npm run e2e         # end-to-end: mock provider → parse → store → G0 signal, no key needed
+npm run eval        # meta-prompt eval suite (dry run without a key)
+```
 
-# build the extension
-npx tsc -b packages/types packages/core packages/adapters
+### Install the extension
+
+```bash
+npm run build:engine
 npm run build --workspace apps/extension-browser
 ```
 
-**Install the extension:** `chrome://extensions` → enable *Developer mode* → *Load unpacked* → select `apps/extension-browser/dist`. Then open the popup, pick a provider + model (NVIDIA NIM's free `llama-3.1-8b-instruct` is the recommended default), paste your API key, hit **Save** — the popup verifies the connection live (🟢 *Connected*). Visit claude.ai (or any supported chat), type, and tap **⚒ Forge prompt**.
+1. Open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select `apps/extension-browser/dist`.
+2. Open the popup, pick a provider and model (NVIDIA NIM's free `llama-3.1-8b-instruct` is the recommended default), paste your API key, and hit **Save**. The popup verifies the connection live (🟢 *Connected*).
+3. Visit claude.ai or any supported chat, type, and tap **⚒ Forge prompt**.
 
-The rewrite runs in the extension's background service worker, which calls the provider directly — no server required.
+The rewrite runs in the extension's background service worker, which calls the provider directly. No server required.
 
 ## Model providers
 
-One engine, seven providers — pick in the popup, or add your own OpenAI-compatible endpoint:
+One engine, seven providers. Pick one in the popup, or add your own OpenAI-compatible endpoint.
 
 | Provider | Recommended model | Key |
 |---|---|---|
@@ -58,152 +81,100 @@ One engine, seven providers — pick in the popup, or add your own OpenAI-compat
 | OpenRouter | any OSS model | `sk-or-…` |
 | Custom | any OpenAI-compatible | optional |
 
-Run the eval suite against a real model: `NVIDIA_API_KEY=… npm run eval` (or `PF_PROVIDER=ollama PF_MODEL=llama3.1:8b npm run eval`).
+Run the eval suite against a real model:
 
-## Architecture: one engine, many shells
+```bash
+NVIDIA_API_KEY=… npm run eval
+PF_PROVIDER=ollama PF_MODEL=llama3.1:8b npm run eval
+```
+
+Adding a provider is one entry in `PROVIDERS` in `packages/core/src/prompt-helper/providers.ts`. See [CONTRIBUTING.md](CONTRIBUTING.md#add-a-model-provider).
+
+## Compressing long pastes
+
+Paste a large JSON array (search results, an API response, an export) with an instruction, tap Forge, and PromptForge rewrites only the instruction. The data is re-encoded on-device into a schema header plus CSV rows, the same idea [Headroom](https://github.com/headroomlabs-ai/headroom) uses for tool output, and appended after the refined prompt. Measured on a 500-item array: about half the tokens, 500 of 500 ids kept, under 50 ms, no network.
+
+| Engine | Install | Where it runs | When to pick it |
+|---|---|---|---|
+| **Built-in** (default) | none | inside the extension | always, unless you already run Headroom |
+| Headroom proxy | `pip install "headroom-ai[proxy]"` then `headroom proxy` | a local Python process on `127.0.0.1:8787` | you want Headroom's other routes or its stats dashboard |
+
+Both engines sit behind the same interface and the same guardrails: only JSON arrays with 2+ items and 400+ tokens qualify; a result is used only if it saves 25% or more and did not come from a lossy route; the engine has 1.5 s, in parallel with the rewrite, or the original data is appended unchanged. Turn it off or switch engines in the popup. The measurements behind every rule are in [the spike write-up](docs/spikes/2026-09-09-headroom-compress.md).
+
+## Architecture
+
+One engine, many shells. `packages/core` is a pure TypeScript library that answers *"given messy text and a model config, return a structured rewrite."* The browser extension, CLI, and VS Code shells are three different UIs that ask it that same question.
 
 ```
                         ┌─────────────────────────────┐
-                        │      packages/core/          │  ← THE BRAIN
-                        │  (pure TypeScript, no UI)     │     Nothing works without this
+                        │        packages/core         │   the engine
+                        │   (pure TypeScript, no UI)   │   nothing works without this
                         └──────────────┬───────────────┘
-                                       │ imported by every surface
+                                       │ refine()
               ┌────────────────────────┼────────────────────────┐
               │                        │                        │
     ┌─────────▼─────────┐   ┌──────────▼──────────┐   ┌─────────▼─────────┐
     │  extension-browser │   │        cli          │   │  extension-vscode │
-    │  (Chrome/MV3)      │   │  (PTY wrapper)       │   │  (editor shell)   │
-    └────────────────────┘   └──────────────────────┘   └───────────────────┘
+    │  (Chrome MV3)      │   │  (PTY wrapper)      │   │  (editor shell)   │
+    └────────────────────┘   └─────────────────────┘   └───────────────────┘
 ```
 
 **Rule of thumb:** a change to *what* a rewrite does (parsing, providers, token counting) belongs in `packages/core`. A change to *where the user sees it* (button, popup, terminal, editor) belongs in the shell.
 
-### The important folders, ranked by how much they matter
-
-**🥇 `packages/core/src/` — the engine (most important folder in the repo)**
-
-```
-core/src/
-├── prompt-helper/
-│   ├── index.ts        ← refine() — THE main function. Everything calls this.
-│   ├── meta-prompt.ts   ← the instruction sent to the LLM (Appendix A)
-│   ├── parser.ts        ← turns the LLM's raw text into structured JSON
-│   ├── providers.ts     ← the 7-provider catalog + buildLlmCall() + testProvider()
-│   └── templates.ts     ← cheap keyword-based intent guessing (no AI needed)
-├── optimizer/
-│   ├── trim.ts          ← free, instant filler-word removal (pre-clean)
-│   └── compress.ts       ← optional big-prompt compression (Phase 2)
-├── metering/
-│   └── tokenizer.ts     ← ~4-chars/token estimate for the live counter
-└── shared/
-    ├── store.ts          ← EventStore — records accept/edit/dismiss, computes G0 rate
-    └── config-loader.ts  ← versioned remote config (Phase 2, not active yet)
-```
-
-Every shell — extension, CLI, VS Code, the eval runner — imports `refine()` from here and nothing else. Rewrite every shell tomorrow and this folder is the only thing that has to survive unchanged.
-
-**🥈 `packages/adapters/src/` — knows about each AI website**
-
-```
-adapters/src/
-├── anthropic.ts   ← Claude.ai's CSS selectors (input box, send button)
-├── openai.ts      ← ChatGPT's selectors
-├── google.ts, xai.ts, perplexity.ts
-└── index.ts       ← adapterForUrl() — picks the right one by hostname
-```
-
-Only the **browser extension** uses this — CLI and VS Code don't inject into a webpage. If claude.ai changes its HTML, fix one file here; nothing else breaks.
-
-**🥉 `packages/types/src/index.ts` — the shared contract**
-
-One file. Defines `PromptHelperResult`, `LlmConfig`, `PromptEvent`. Every package and shell imports types from here so the JSON shape never drifts between them.
-
-### How each shell calls the engine
-
-**Chrome Extension (`apps/extension-browser/`)** — the one that's actually running:
-
-```
-content/index.tsx  →  user clicks "⚒ Forge"
-        │
-        │  chrome.runtime.sendMessage({type:"pf-rewrite", input, cfg})
-        ▼
-background/index.ts  →  runs refine(input, buildLlmCall(cfg))
-        │                (background worker = no CORS problem, calls NVIDIA/OpenAI directly)
-        ▼
-content/Overlay.tsx  →  renders the result, Accept writes it into the chat box
-        │
-        ▼
-content/model-config.ts + chrome-store.ts  →  saves your provider/model/key + the outcome
-```
-
-Content scripts run *inside* claude.ai's page and inherit its strict CSP + CORS rules. The background service worker is a separate, privileged context — that's the only reason a direct `fetch` to NVIDIA's API works at all.
-
-**CLI (`apps/cli/src/index.ts`)** — thin, reuses core directly:
-
-```
-node-pty spawns the real tool (codex/claude/gemini) in a pseudo-terminal
-        │
-you type → CLI buffers keystrokes → press the refine hotkey (Ctrl-R)
-        │
-        │  calls refine(buffer, backendCall) — SAME function as the extension
-        ▼
-rewritten text is injected back into the wrapped tool's stdin
-```
-
-A Node process has no CORS restrictions at all, so this shell needs no background worker — the least glue code of the three.
-
-**VS Code (`apps/extension-vscode/src/extension.ts`)** — simplest shell:
-
-```
-"Refine Selection" command → reads your text selection
-        │  same refine() + buildLlmCall() from core
-        ▼
-replaces the selection with the rewritten prompt
-```
-
-No popup, no background worker — just one command.
-
-### What's not load-bearing
-
-Skip these when getting oriented — they don't affect the rewrite feature itself:
-- `apps/backend/` — optional hosted-mode proxy; the extension's worker calls providers directly instead
-- `apps/dashboard/`, `apps/landing/` — marketing/analytics
-- `evals/` — test harnesses, not shipped
-- `config/*.json` — bundled defaults for Phase 2's remote config, not active yet
-
-**One-sentence mental model:** `packages/core` is a library that answers *"given messy text and a model config, return a structured rewrite"* — and `extension-browser`, `cli`, and `extension-vscode` are three different UIs that ask it that same question.
-
-### Repository layout
-
 ```
 packages/
-  core/        the engine (isomorphic TS): prompt-helper · optimizer · metering · providers · store
-  adapters/    per-platform DOM adapters (Claude, ChatGPT, Gemini, Grok, Perplexity)
-  types/       shared types + output schema
+  core/               the engine: prompt-helper · optimizer · metering · providers · store
+  adapters/           per-site DOM adapters (Claude, ChatGPT, Gemini, Grok, Perplexity)
+  types/              shared types and output schema
 apps/
-  extension-browser/  MV3 shell — content script, worker, popup (Vite + CRXJS)
-  dashboard/          Next.js — quality trend + usage signals
+  extension-browser/  Chrome MV3 shell: content script, service worker, popup (Vite + CRXJS)
+  cli/                PTY shim that wraps codex / claude / gemini
+  extension-vscode/   VS Code "Refine Selection" command
+  backend/            optional hosted-mode proxy + Postgres schema
+  dashboard/          Next.js quality-trend dashboard
   landing/            Next.js marketing site
-  backend/            optional hosted-mode proxy + Postgres schema (Phase 1+)
-  extension-vscode/   VS Code shell (Phase 3)
-  cli/                PTY shim for CLI tools (Phase 4)
-evals/         meta-prompt eval suite + e2e harness
-config/        versioned selectors & pricing references
+evals/                meta-prompt eval suite + end-to-end harness
+config/               versioned selectors and pricing references
+docs/                 architecture tour
 ```
 
-The build is phased behind **validation gates**: nothing past the Phase 0 MVP ships until real usage clears a ≥40% rewrite-acceptance rate (the G0 signal shown in the popup). See the plan document for the full roadmap.
+The full code tour, with the rewrite pipeline and the extension's message flow, is in **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**. Each engine package has its own README: [core](packages/core/README.md) · [adapters](packages/adapters/README.md) · [types](packages/types/README.md).
 
 ## Development
 
-```bash
-npm test                                   # unit tests (Vitest)
-npm run e2e                                # full-pipeline test, no key needed
-npm run clean                              # remove all build output
-npm run dev --workspace apps/backend       # optional local hosted-mode proxy
-npm run dev --workspace apps/landing       # marketing site on :3000
-```
+| Command | What it does |
+|---|---|
+| `npm run lint` | ESLint (flat config, `typescript-eslint`) |
+| `npm run typecheck` | `tsc -b` on the engine, then every app shell |
+| `npm test` / `npm run test:watch` | Vitest unit tests against source |
+| `npm run e2e` | Full pipeline against a mock provider and a mock Headroom proxy |
+| `npm run e2e:headroom` | 500-item paste through the built-in engine, plus the Headroom proxy when one is running |
+| `npm run eval` | Meta-prompt eval suite; dry run without a key |
+| `npm run build:engine` | Compile `types`, `core`, `adapters` to `dist/` |
+| `npm run dev:ext` | Vite dev server for the extension |
+| `npm run dev --workspace apps/backend` | Optional local hosted-mode proxy on :3000 |
+| `npm run dev --workspace apps/landing` | Marketing site on :3000 |
+| `npm run clean` | Remove all build output |
 
-Guardrails baked in: opt-in button only · length gate (no LLM call on trivial input) · original always kept, diff always shown · 30s provider timeout · minimal host permissions (never `<all_urls>`).
+Copy `.env.example` to `.env` for the eval suite and the optional proxy. The extension never reads it; configure it in the popup.
+
+Guardrails baked in: opt-in button only · length gate (no LLM call on trivial input) · original always kept, diff always shown · 30s provider timeout · minimal host permissions (never `<all_urls>`) · deflection guard with a deterministic fallback · pasted data never edited or sent to the rewrite model.
+
+The roadmap is phased behind **validation gates**: nothing past the Phase 0 MVP ships until real usage clears a ≥40% rewrite-acceptance rate (the G0 signal shown in the popup).
+
+## Contributing
+
+Contributions are welcome, from a typo fix to a new platform adapter. Start with [CONTRIBUTING.md](CONTRIBUTING.md) for setup, conventions, and the pull-request checklist. This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md).
+
+Good first contributions:
+
+- Add a model provider (one catalog entry plus a test).
+- Add a chat platform adapter (one file plus selectors).
+- Add an eval case in `evals/cases.json` for a rewrite that went wrong.
+
+## Security
+
+Please report vulnerabilities privately through GitHub's **Security → Report a vulnerability** tab, not as a public issue. Details in [SECURITY.md](SECURITY.md).
 
 ## Privacy
 

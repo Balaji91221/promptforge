@@ -23,7 +23,19 @@ export interface PromptHelperResult {
   /** from the metering subsystem */
   tokens_before?: number;
   tokens_after?: number;
+  /** present only when an attached payload was compressed locally before the rewrite */
+  compression?: CompressionInfo;
 }
+
+/** Local compression applied to an attached payload (e.g. a pasted JSON array). */
+export type CompressionInfo = {
+  provider: "builtin" | "headroom";
+  /** counted by the compressor; includes ~20 tokens of its own message scaffolding */
+  tokens_before: number;
+  tokens_after: number;
+  /** compressor-reported transform ids, e.g. "router:mixed:0.41" */
+  transforms: string[];
+};
 
 /** Ground-truth signal recorded per rewrite (drives gates §7 + dashboard). */
 export type Outcome = "accepted" | "edited_then_sent" | "dismissed";

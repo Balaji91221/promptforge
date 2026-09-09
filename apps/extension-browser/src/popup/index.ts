@@ -1,7 +1,16 @@
 // Popup: model/provider dropdown + the Phase 0 ground-truth signals (§7).
-import { PROVIDERS, EventStore, type ProviderId, type LlmConfig } from "@promptforge/core";
+import {
+  PROVIDERS,
+  EventStore,
+  HEADROOM_DEFAULTS,
+  isLoopbackUrl,
+  type ProviderId,
+  type LlmConfig,
+  type HeadroomHealth,
+} from "@promptforge/core";
 import { chromeStore } from "../content/chrome-store.js";
 import { getModelConfig, setModelConfig, isConfigUsable } from "../content/model-config.js";
+import { getSettings, setSettings, type CompressEngine } from "../content/settings.js";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const providerSel = $<HTMLSelectElement>("provider");
@@ -15,6 +24,13 @@ const baseUrl = $<HTMLInputElement>("baseUrl");
 const saveBtn = $<HTMLButtonElement>("save");
 const testBtn = $<HTMLButtonElement>("test");
 const statusEl = $<HTMLDivElement>("status");
+const cmpEnabled = $<HTMLInputElement>("cmpEnabled");
+const cmpEngine = $<HTMLSelectElement>("cmpEngine");
+const cmpWrap = $<HTMLDivElement>("cmpWrap");
+const hrUrl = $<HTMLInputElement>("hrUrl");
+const hrWrap = $<HTMLDivElement>("hrWrap");
+const hrTest = $<HTMLButtonElement>("hrTest");
+const hrStatus = $<HTMLDivElement>("hrStatus");
 
 const CUSTOM = "__custom__";
 
@@ -80,14 +96,73 @@ async function init() {
   testBtn.addEventListener("click", () => void runTest());
 
   await renderStats();
+  await initCompression();
 
   // Auto-check connection on open so the user sees status immediately.
   if (isConfigUsable(cfg, PROVIDERS[cfg.provider].needsKey)) void runTest();
 }
 
+// ---- Compression of large JSON pastes: built-in by default, Headroom optional ----
+async function initCompression() {
+  const s = await getSettings();
+  cmpEnabled.checked = s.compress;
+  cmpEngine.value = s.engine;
+  hrUrl.value = s.headroomUrl;
+  const sync = () => {
+    cmpWrap.classList.toggle("hide", !cmpEnabled.checked);
+    hrWrap.classList.toggle("hide", cmpEngine.value !== "headroom");
+  };
+  sync();
+
+  cmpEnabled.addEventListener("change", async () => {
+    sync();
+    await setSettings({ compress: cmpEnabled.checked });
+  });
+  cmpEngine.addEventListener("change", async () => {
+    const engine: CompressEngine = cmpEngine.value === "headroom" ? "headroom" : "builtin";
+    sync();
+    await setSettings({ engine });
+    if (engine === "headroom") void checkHeadroom();
+  });
+  hrUrl.addEventListener("change", async () => {
+    const url = hrUrl.value.trim() || HEADROOM_DEFAULTS.baseUrl;
+    if (!isLoopbackUrl(url)) {
+      setStatusOn(hrStatus, "err", "✕ URL must be http://localhost or http://127.0.0.1 — Headroom runs on this device only.");
+      return;
+    }
+    hrUrl.value = url;
+    await setSettings({ headroomUrl: url });
+    void checkHeadroom();
+  });
+  hrTest.addEventListener("click", () => void checkHeadroom());
+  if (s.compress && s.engine === "headroom") void checkHeadroom();
+}
+
+async function checkHeadroom() {
+  setStatusOn(hrStatus, "wait", "⋯ Checking Headroom proxy…");
+  const res = await new Promise<HeadroomHealth>((resolve) => {
+    chrome.runtime.sendMessage({ type: "pf-headroom-health", url: hrUrl.value.trim() || undefined }, (r) => {
+      resolve(chrome.runtime.lastError ? { ok: false, ms: 0, error: chrome.runtime.lastError.message ?? "no response" } : r);
+    });
+  });
+  if (res.ok) {
+    setStatusOn(hrStatus, "ok", `● <b>Headroom ${escapeHtml(res.version)}</b> · ${res.ms}ms — large JSON pastes will be compressed`);
+  } else {
+    setStatusOn(hrStatus, "err", `✕ <b>Not running</b> — ${escapeHtml(res.error)}. Start it with <code>headroom proxy</code>.`);
+  }
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+
 function setStatus(kind: "wait" | "ok" | "err", html: string) {
-  statusEl.className = `status show ${kind}`;
-  statusEl.innerHTML = html;
+  setStatusOn(statusEl, kind, html);
+}
+
+function setStatusOn(el: HTMLElement, kind: "wait" | "ok" | "err", html: string) {
+  el.className = `status show ${kind}`;
+  el.innerHTML = html;
 }
 
 // Runs the SAME background path as Forge → a pass means Forge will work.

@@ -1,0 +1,49 @@
+health: {"service":"headroom-proxy","status":"healthy","ready":true,"version":"0.35.0","timestamp":"2026-09-08T20:00:35.462162Z","uptime_seconds":38.302,"checks":{"star
+
+paste  variant                                  before →  after   saved   latency
+log    A user-msg, default cfg                    5136 →   3885  saved  24%   1170ms  lost=none  transforms=router:search:0.76  ccr=0
+log    B user-msg, compress_user_messages         5136 →   3885  saved  24%     29ms  lost=none  transforms=router:search:0.76  ccr=0
+log    C user-msg, +frozen_message_count=0        5136 →   3885  saved  24%     26ms  lost=none  transforms=router:search:0.76  ccr=0
+log    D as tool-result, default cfg              5155 →   3904  saved  24%     34ms  lost=none  transforms=router:search:0.76  ccr=0
+log    E as tool-result, frozen=0                 5155 →   3904  saved  24%     19ms  lost=none  transforms=router:search:0.76  ccr=0
+json   A user-msg, default cfg                    7780 →   4097  saved  47%     53ms  lost=none  transforms=router:mixed:0.42  ccr=0
+json   B user-msg, compress_user_messages         7780 →   4097  saved  47%      9ms  lost=none  transforms=router:mixed:0.42  ccr=0
+json   C user-msg, +frozen_message_count=0        7780 →   4097  saved  47%      9ms  lost=none  transforms=router:mixed:0.42  ccr=0
+json   D as tool-result, default cfg              7799 →   4116  saved  47%     27ms  lost=none  transforms=router:mixed:0.42  ccr=0
+json   E as tool-result, frozen=0                 7799 →   4116  saved  47%      7ms  lost=none  transforms=router:mixed:0.42  ccr=0
+prose  A user-msg, default cfg                     606 →    606  saved   0%      6ms  lost=none  transforms=router:noop  ccr=0
+prose  B user-msg, compress_user_messages          606 →    606  saved   0%      5ms  lost=none  transforms=router:noop  ccr=0
+prose  C user-msg, +frozen_message_count=0         606 →    606  saved   0%      4ms  lost=none  transforms=router:noop  ccr=0
+prose  D as tool-result, default cfg               625 →    625  saved   0%      5ms  lost=none  transforms=router:noop  ccr=0
+prose  E as tool-result, frozen=0                  625 →    625  saved   0%      4ms  lost=none  transforms=router:noop  ccr=0
+
+--- first compressed output for log (head 900 chars) ---
+fix this error, explain root cause in under 5 bullets, i think its the retry config
+
+2026-09-08T10
+15:00.000Z WARN gateway req=req-fa0 latency_ms=20 status=200 path=/v1/charge
+15:01.370Z INFO payments req=req-fa1 latency_ms=27 status=200 path=/v1/charge
+15:02.740Z INFO ledger req=req-fa2 latency_ms=34 status=200 path=/v1/charge
+15:04.110Z INFO notify req=req-fa3 latency_ms=41 status=200 path=/v1/charge
+15:05.480Z INFO gateway req=req-fa4 latency_ms=48 status=200 path=/v1/charge
+15:06.850Z INFO payments req=req-fa5 latency_ms=55 status=200 path=/v1/charge
+15:08.220Z INFO ledger req=req-fa6 latency_ms=62 status=200 path=/v1/charge
+15:09.590Z INFO notify req=req-fa7 latency_ms=69 status=200 path=/v1/charge
+15:10.960Z INFO gateway req=req-fa8 latency_ms=76 status=200 path=/v1/charge
+15:12.330Z INFO payments req=req-fa9 latency_ms=83 status=200 path=/v1/charge
+15:13.700Z INFO ledger req=req-f
+--- tail 400 ---
+h=/v1/charge
+18:04.950Z INFO notify req=req-1027 latency_ms=65 status=200 path=/v1/charge
+18:06.320Z INFO gateway req=req-1028 latency_ms=72 status=200 path=/v1/charge
+18:07.690Z INFO payments req=req-1029 latency_ms=79 status=200 path=/v1/charge
+18:09.060Z WARN ledger req=req-102a latency_ms=86 status=200 path=/v1/charge
+18:10.430Z INFO notify req=req-102b latency_ms=93 status=200 path=/v1/charge
+
+--- first compressed output for json (head 900 chars) ---
+summarize the most relevant of these search results for a non-technical manager, 3 bullets max
+
+
+"[60]{id:string,metadata.author:string,metadata.words:int,metadata.lang:string,metadata.version:int,score:float,tags:json,title:string,updated_at:string,url:string}\ndoc-000000,user0@example.com,1200,en,1,0.97,\"[\"\"metrics\"\",\"\"quarterly\"\",\"\"enterprise\"\"]\",Report 0: weekly metrics digest,2026-01-10T08:00:00Z,https://kb.example.internal/docs/0\ndoc-000001,user1@example.com,1213,en,2,0.959,\"[\"\"metrics\"\",\"\"weekly\"\",\"\"smb\"\"]\",Report 1: weekly metrics digest,2026-02-11T08:00:00Z,https://kb.example.internal/docs/1\ndoc-000002,user2@example.com,1226,en,3,0.948,\"[\"\"metrics\"\",\"\"weekly\"\",\"\"smb\"\"]\",Report 2: weekly metrics digest,2026-03-12T08:00:00Z,https://kb.example.internal/docs/2\ndoc-000003,user3@example.com,1239,en,4,0.937,\"[\"\"metrics\"\",\"\"quarterly\"
+--- tail 400 ---
+kb.example.internal/docs/57\ndoc-000058,user2@example.com,1954,en,3,0.332,\"[\"\"metrics\"\",\"\"weekly\"\",\"\"smb\"\"]\",Report 58: weekly metrics digest,2026-03-14T08:00:00Z,https://kb.example.internal/docs/58\ndoc-000059,user3@example.com,1967,en,4,0.321,\"[\"\"metrics\"\",\"\"weekly\"\",\"\"smb\"\"]\",Report 59: weekly metrics digest,2026-04-15T08:00:00Z,https://kb.example.internal/docs/59\n"

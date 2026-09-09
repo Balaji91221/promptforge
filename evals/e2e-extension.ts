@@ -9,11 +9,15 @@
 //     → [core] token delta + estimateTokens
 //     → write to composer (simulated) + EventStore(InMemoryBackend)
 //     → record outcome → acceptanceRate() (the G0 signal)
+//   paste mode (BYO path): refine() + mock Headroom proxy → compressed / down / slow / lossy / off
 //
 // Run:  npx tsx evals/e2e-extension.ts
 
-import { createServer } from "node:http";
-import { ruleTrim, parseResult, EventStore, InMemoryBackend, estimateTokens } from "@promptforge/core";
+import { createServer, type IncomingMessage } from "node:http";
+import {
+  ruleTrim, parseResult, EventStore, InMemoryBackend, estimateTokens,
+  refine, buildHeadroomCompress, builtinCompress, HEADROOM_DEFAULTS,
+} from "@promptforge/core";
 import type { PromptEvent, Outcome } from "@promptforge/types";
 
 const MIN_CHARS = 12;
@@ -73,6 +77,56 @@ function startBackend(): Promise<{ url: string; close: () => void }> {
   });
 }
 
+// ---- mock Headroom proxy: same contract as POST /v1/compress (shape copied from
+// docs/spikes/spike-run4.txt). `mode` switches failure behaviour per scenario. ----
+type HeadroomMode = "ok" | "slow" | "text";
+function readBody(req: IncomingMessage): Promise<string> {
+  return new Promise((resolve) => { let b = ""; req.on("data", (c) => (b += c)); req.on("end", () => resolve(b)); });
+}
+function crush(payload: string): string {
+  // SmartCrusher-like: schema header + one CSV row per item.
+  const items = JSON.parse(payload) as Record<string, unknown>[];
+  const keys = Object.keys(items[0] ?? {});
+  const rows = items.map((it) => keys.map((k) => String(it[k])).join(","));
+  return `[${items.length}]{${keys.map((k) => `${k}:string`).join(",")}}\n${rows.join("\n")}\n`;
+}
+function startHeadroom(state: { mode: HeadroomMode }): Promise<{ url: string; close: () => void }> {
+  return new Promise((resolve) => {
+    const server = createServer(async (req, res) => {
+      if (req.method === "GET" && req.url === "/health") {
+        res.writeHead(200, { "content-type": "application/json" });
+        return res.end(JSON.stringify({ status: "healthy", version: "mock" }));
+      }
+      if (req.method !== "POST" || req.url !== "/v1/compress") { res.statusCode = 404; return res.end(); }
+      const body = JSON.parse(await readBody(req)) as { messages: { role: string; content: string; tool_call_id?: string }[] };
+      const tool = body.messages.find((m) => m.role === "tool");
+      if (!tool) { res.statusCode = 400; return res.end(JSON.stringify({ error: "no tool message" })); }
+      if (state.mode === "slow") await new Promise((r) => setTimeout(r, HEADROOM_DEFAULTS.timeoutMs + 700));
+      const compressed = state.mode === "text" ? tool.content.slice(0, Math.floor(tool.content.length * 0.8)) : crush(tool.content);
+      const before = estimateTokens(tool.content) + 19, after = estimateTokens(compressed) + 19;
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify({
+        messages: body.messages.map((m) => (m === tool ? { ...m, content: compressed } : m)),
+        tokens_before: before, tokens_after: after, tokens_saved: before - after,
+        compression_ratio: after / before,
+        transforms_applied: [state.mode === "text" ? "router:text:0.82" : "router:mixed:0.41"],
+        ccr_hashes: [],
+      }));
+    });
+    server.listen(0, () => {
+      const addr = server.address();
+      const port = typeof addr === "object" && addr ? addr.port : 0;
+      resolve({ url: `http://127.0.0.1:${port}`, close: () => server.close() });
+    });
+  });
+}
+
+function bigArray(n: number): string {
+  return JSON.stringify(Array.from({ length: n }, (_, i) => ({
+    id: `doc-${String(i).padStart(6, "0")}`, title: `Report ${i}: weekly metrics digest`, score: 1 - i / (n + 1),
+  })), null, 2);
+}
+
 // ---- the extension's SSE consumer needs __PF_API__ + browser globals (Node 18+ has fetch/TextDecoder) ----
 async function main() {
   const backend = await startBackend();
@@ -93,7 +147,8 @@ async function main() {
   let pass = 0, fail = 0;
   const check = (name: string, cond: boolean, extra = "") => {
     console.log(`${cond ? "  ✓" : "  ✗"} ${name}${extra ? "  " + extra : ""}`);
-    cond ? pass++ : fail++;
+    if (cond) pass++;
+    else fail++;
   };
 
   for (const s of scenarios) {
@@ -143,6 +198,74 @@ async function main() {
   check("acceptance rate computed from stored outcomes", Math.abs(rate - 2 / 3) < 1e-9);
 
   backend.close();
+
+  // ---- 6) BYO path in paste mode: instruction + large JSON array, with Headroom ----
+  const state: { mode: HeadroomMode } = { mode: "ok" };
+  const headroom = await startHeadroom(state);
+  const ARR = bigArray(120);
+  const ids = Array.from({ length: 120 }, (_, i) => `doc-${String(i).padStart(6, "0")}`);
+  const PASTE_JSON = JSON.stringify({
+    intent: "summarize", refined_prompt: "Summarize the data below in 3 bullets for a non-technical manager.",
+    applied_techniques: ["clarity", "audience"], suggestions: ["specify time range"], quality_before: 30, quality_after: 84,
+  });
+  const seenTurns: string[] = [];
+  const mockLlm = (delayMs: number) => async (_sys: string, user: string) => {
+    seenTurns.push(user);
+    await new Promise((r) => setTimeout(r, delayMs));
+    return PASTE_JSON;
+  };
+  const raw = `summarize\n\n${ARR}`;
+
+  console.log(`\n▸ paste: "summarize" + ${ids.length}-item JSON array (~${estimateTokens(ARR)} tokens), BUILT-IN engine (no proxy, no network)`);
+  const biOut = await refine(raw, mockLlm(0), { compress: builtinCompress });
+  const biPrompt = biOut.result?.refined_prompt ?? "";
+  const bi = biOut.result?.compression;
+  check("compressed on-device", bi?.provider === "builtin", bi ? `${bi.tokens_before} → ${bi.tokens_after} tokens (${Math.round((1 - bi.tokens_after / bi.tokens_before) * 100)}% saved) · ${bi.transforms.join(",")}` : "");
+  check("saved ≥ 40%", !!bi && 1 - bi.tokens_after / bi.tokens_before >= 0.4);
+  check("table header present", biPrompt.includes(`[${ids.length}]{id:string,title:string,score:`));
+  check("every id and title survived", ids.every((id) => biPrompt.includes(id)) && biPrompt.includes("Report 119: weekly metrics digest"));
+
+  console.log(`\n▸ paste: same input, HEADROOM engine (mock proxy up)`);
+  state.mode = "ok";
+  const t1 = performance.now();
+  const okOut = await refine(raw, mockLlm(400), { compress: buildHeadroomCompress({ ...HEADROOM_DEFAULTS, baseUrl: headroom.url }) });
+  const okMs = Math.round(performance.now() - t1);
+  const okPrompt = okOut.result?.refined_prompt ?? "";
+  check("forged despite a 9-char instruction", okOut.status === "ok");
+  check("model saw the instruction + attachment note, not the data",
+    (seenTurns.at(-1) ?? "").includes("ATTACHED DATA") && !(seenTurns.at(-1) ?? "").includes("doc-000007"));
+  check("compression applied and reported", okOut.result?.compression?.provider === "headroom",
+    okOut.result?.compression ? `${okOut.result.compression.tokens_before} → ${okOut.result.compression.tokens_after} tokens` : "");
+  check("assembled prompt = refined instruction + compressed data", okPrompt.startsWith("Summarize the data below") && okPrompt.includes("[120]{"));
+  check("every id survived compression", ids.every((id) => okPrompt.includes(id)), `${ids.length}/${ids.length}`);
+  check("tokens_after < tokens_before", (okOut.result?.tokens_after ?? 1) < (okOut.result?.tokens_before ?? 0),
+    `~${okOut.result?.tokens_before} → ${okOut.result?.tokens_after}`);
+  check("compress ran in parallel with the model call (400ms model, total < 650ms)", okMs < 650, `${okMs}ms`);
+
+  console.log(`\n▸ paste, Headroom proxy DOWN`);
+  const downOut = await refine(raw, mockLlm(0), { compress: buildHeadroomCompress({ ...HEADROOM_DEFAULTS, baseUrl: "http://127.0.0.1:1" }) });
+  check("still forged", downOut.status === "ok");
+  check("original data appended unchanged, no compression info",
+    (downOut.result?.refined_prompt ?? "").endsWith(ARR) && downOut.result?.compression === undefined);
+
+  console.log(`\n▸ paste, Headroom proxy SLOW (> ${HEADROOM_DEFAULTS.timeoutMs}ms timeout)`);
+  state.mode = "slow";
+  const t2 = performance.now();
+  const slowOut = await refine(raw, mockLlm(0), { compress: buildHeadroomCompress({ ...HEADROOM_DEFAULTS, baseUrl: headroom.url }) });
+  const slowMs = Math.round(performance.now() - t2);
+  check("timed out and fell back to the original data", (slowOut.result?.refined_prompt ?? "").endsWith(ARR) && slowOut.result?.compression === undefined);
+  check(`gave up within the client timeout (+300ms slack)`, slowMs < HEADROOM_DEFAULTS.timeoutMs + 300, `${slowMs}ms`);
+
+  console.log(`\n▸ paste, Headroom returns a lossy transform (router:text)`);
+  state.mode = "text";
+  const textOut = await refine(raw, mockLlm(0), { compress: buildHeadroomCompress({ ...HEADROOM_DEFAULTS, baseUrl: headroom.url }) });
+  check("rejected by the allowlist, original data kept", (textOut.result?.refined_prompt ?? "").endsWith(ARR) && textOut.result?.compression === undefined);
+
+  console.log(`\n▸ paste, Headroom disabled (no compressor)`);
+  const offOut = await refine(raw, mockLlm(0));
+  check("byte-identical to the fallback result", offOut.result?.refined_prompt === downOut.result?.refined_prompt);
+
+  headroom.close();
   console.log(`\n${fail === 0 ? "✅ ALL PASS" : "❌ FAILURES"} — ${pass} checks passed, ${fail} failed`);
   if (fail) process.exitCode = 1;
 }

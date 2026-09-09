@@ -1,25 +1,59 @@
 {
   "name": "promptforge",
+  "version": "0.1.0",
   "private": true,
-  "version": "0.0.0",
-  "description": "PromptForge — cross-provider prompt-engineering assistant. Phase 0 validation MVP.",
+  "description": "Cross-provider prompt-engineering assistant: rewrites messy input into a clear prompt on Claude, ChatGPT, Gemini, Grok and Perplexity.",
+  "license": "MIT",
+  "author": "Balaji91221",
+  "homepage": "https://github.com/Balaji91221/promptforge#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Balaji91221/promptforge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Balaji91221/promptforge/issues"
+  },
+  "keywords": [
+    "prompt-engineering",
+    "llm",
+    "chrome-extension",
+    "claude",
+    "chatgpt",
+    "gemini",
+    "openai",
+    "anthropic",
+    "ollama",
+    "typescript",
+    "monorepo"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "workspaces": [
     "packages/*",
     "apps/*"
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
-    "typecheck": "tsc -b",
-    "eval": "tsx evals/runner.ts",
-    "e2e": "tsc -b packages/types packages/core packages/adapters && tsx evals/e2e-extension.ts",
-    "clean": "rm -rf packages/*/dist packages/*/*.tsbuildinfo apps/*/dist apps/*/.next",
+    "build:engine": "tsc -b packages/types packages/core packages/adapters",
+    "typecheck": "tsc -b && npm run typecheck --workspaces --if-present",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "test:watch": "vitest",
-    "dev:ext": "npm run dev --workspace apps/extension-browser"
+    "e2e": "npm run build:engine && tsx evals/e2e-extension.ts",
+    "e2e:headroom": "npm run build:engine && tsx evals/headroom-live.ts",
+    "eval": "tsx evals/runner.ts",
+    "dev:ext": "npm run dev --workspace apps/extension-browser",
+    "clean": "rm -rf packages/*/dist packages/*/*.tsbuildinfo apps/*/dist apps/*/.next"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "globals": "^16.5.0",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3",
+    "typescript-eslint": "^8.70.0",
     "vitest": "^2.1.8"
   }
 }

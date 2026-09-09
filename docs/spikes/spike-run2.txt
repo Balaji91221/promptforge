@@ -1,0 +1,6 @@
+P1 prose x3              1822 →   1416  saved  22%   4665ms  lost=twelve per month to two  transforms=router:text:0.82
+P2 repetitive log        7749 →   4610  saved  41%   6662ms  lost=none  transforms=router:search:0.59
+  P2 output lines: 1 | head: []
+P3 json quoting          1306 →    597  saved  54%     26ms  lost=none  transforms=router:mixed:0.29
+  P3 payload starts with quote? false | literal backslash-n count: 41 | real newlines: 1
+  P3 payload head: "\n\"[40]{id:string,score:json,title:string}\\ndoc-0,1,Report 0\\ndoc-1,0.98,Report 1\\ndoc-2,0.96,Report 2\\ndoc-3,0.94,Report 3\\ndoc-4,0.92,Report 4\\ndoc-5,0.9,Repor"
