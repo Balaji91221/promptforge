@@ -64,7 +64,7 @@ jobs:
       - name: Build landing
         run: npm run build --workspace apps/landing
       - name: Upload extension artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: extension-dist
           path: apps/extension-browser/dist
