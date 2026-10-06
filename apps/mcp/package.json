@@ -1,0 +1,25 @@
+{
+  "name": "@promptforge/mcp",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "MCP server exposing PromptForge's forge_prompt tool to coding agents (Claude Code, Codex, Gemini CLI, Cursor, Windsurf).",
+  "bin": {
+    "promptforge-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p . && cp src/tool-description.md dist/",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc -p . --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@promptforge/core": "*",
+    "@promptforge/types": "*",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.1",
+    "tsx": "^4.23.13",
+    "typescript": "^5.6.3"
+  }
+}

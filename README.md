@@ -13,7 +13,7 @@ It sits on the input box of every AI chat you use — Claude, ChatGPT, Gemini, G
 [![Chrome MV3](https://img.shields.io/badge/Chrome-MV3-4285F4?logo=googlechrome&logoColor=white)](apps/extension-browser)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-14B8A6.svg)](CONTRIBUTING.md)
 
-[Quick start](#quick-start) · [Providers](#model-providers) · [Architecture](#architecture) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md)
+[Quick start](#quick-start) · [Providers](#model-providers) · [Coding agents](#coding-agents-mcp) · [Architecture](#architecture) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md)
 
 </div>
 
@@ -101,6 +101,17 @@ Paste a large JSON array (search results, an API response, an export) with an in
 
 Both engines sit behind the same interface and the same guardrails: only JSON arrays with 2+ items and 400+ tokens qualify; a result is used only if it saves 25% or more and did not come from a lossy route; the engine has 1.5 s, in parallel with the rewrite, or the original data is appended unchanged. Turn it off or switch engines in the popup. The measurements behind every rule are in [the spike write-up](docs/spikes/2026-09-09-headroom-compress.md).
 
+## Coding agents (MCP)
+
+The same engine runs inside Claude Code, Codex CLI, Gemini CLI, Cursor and Windsurf through a small [MCP](https://modelcontextprotocol.io) server with one tool, `forge_prompt`. Say "forge this: fix my login bug" and the agent calls the tool, shows you the refined prompt and what changed, then works from it.
+
+```bash
+npm run build:engine && npm run build --workspace apps/mcp
+claude mcp add --scope user --env NVIDIA_API_KEY=nvapi-… --transport stdio promptforge -- node "$PWD/apps/mcp/dist/index.js"
+```
+
+Inside this clone, `.mcp.json` already declares the server for Claude Code. Config blocks for all five agents, the env table and the tool contract are in [`apps/mcp/README.md`](apps/mcp/README.md). Claude Code is live-tested; the other four are verified against vendor docs.
+
 ## Architecture
 
 One engine, many shells. `packages/core` is a pure TypeScript library that answers *"given messy text and a model config, return a structured rewrite."* The browser extension, CLI, and VS Code shells are three different UIs that ask it that same question.
@@ -148,6 +159,7 @@ The full code tour, with the rewrite pipeline and the extension's message flow, 
 | `npm run typecheck` | `tsc -b` on the engine, then every app shell |
 | `npm test` / `npm run test:watch` | Vitest unit tests against source |
 | `npm run e2e` | Full pipeline against a mock provider and a mock Headroom proxy |
+| `npm run e2e:mcp` | MCP server over real stdio against a mock model |
 | `npm run e2e:headroom` | 500-item paste through the built-in engine, plus the Headroom proxy when one is running |
 | `npm run eval` | Meta-prompt eval suite; dry run without a key |
 | `npm run build:engine` | Compile `types`, `core`, `adapters` to `dist/` |

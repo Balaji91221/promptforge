@@ -45,7 +45,8 @@
     "e2e:headroom": "npm run build:engine && tsx evals/headroom-live.ts",
     "eval": "tsx evals/runner.ts",
     "dev:ext": "npm run dev --workspace apps/extension-browser",
-    "clean": "rm -rf packages/*/dist packages/*/*.tsbuildinfo apps/*/dist apps/*/.next"
+    "clean": "rm -rf packages/*/dist packages/*/*.tsbuildinfo apps/*/dist apps/*/.next",
+    "e2e:mcp": "npm run build:engine && npm run build --workspace apps/mcp && tsx evals/e2e-mcp.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -42,6 +42,8 @@ jobs:
         run: npm test
       - name: End-to-end (mock provider)
         run: npm run e2e
+      - name: End-to-end MCP server (stdio, mock provider)
+        run: npm run e2e:mcp
       - name: Eval harness (dry run)
         run: npm run eval
 

@@ -9,6 +9,14 @@ and the project uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- `apps/mcp`: a stdio MCP server exposing `forge_prompt` to coding agents
+  (Claude Code, Codex CLI, Gemini CLI, Cursor, Windsurf). Reuses core
+  `refine()` unchanged; provider from `PF_*` env; every failure is a JSON error
+  object, the process never exits. `.mcp.json` at the repo root declares it for
+  Claude Code. `npm run e2e:mcp` runs a real stdio round-trip against a mock
+  model. Live-tested in Claude Code; other agents doc-verified.
+  Debt: `apps/mcp/src/config.ts` mirrors `evals/runner.ts` `resolveConfig()`.
+
 - Paste mode in `refine()`: an instruction plus a large JSON array is split;
   only the instruction is rewritten, the data is appended by code. Fixes long
   pastes being lost inside the model's 1024-token reply.

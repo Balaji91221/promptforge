@@ -2,7 +2,7 @@
   "name": "@promptforge/cli",
   "version": "0.0.1",
   "type": "module",
-  "description": "Phase 4 CLI shim — wraps Codex/Gemini/Grok/Claude Code, refines input before send.",
+  "description": "Legacy PTY shim that wraps Codex/Gemini/Grok/Claude Code. Prefer apps/mcp (MCP server) for coding agents.",
   "bin": {
     "promptforge": "./dist/index.js"
   },

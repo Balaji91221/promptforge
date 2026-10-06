@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "promptforge": {
+      "command": "node",
+      "args": ["apps/mcp/dist/index.js"],
+      "env": {
+        "NVIDIA_API_KEY": "${NVIDIA_API_KEY:-}",
+        "PF_PROVIDER": "${PF_PROVIDER:-}",
+        "PF_MODEL": "${PF_MODEL:-}",
+        "PF_API_KEY": "${PF_API_KEY:-}",
+        "PF_BASE_URL": "${PF_BASE_URL:-}"
+      }
+    }
+  }
+}

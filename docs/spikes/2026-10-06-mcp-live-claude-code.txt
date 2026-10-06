@@ -1,0 +1,37 @@
+# MCP live check — Claude Code headless, 2026-10-06
+
+Command (mock OpenAI-compatible model on localhost:11435, no key):
+
+```
+claude -p "forge this: explain mv3 service worker vs background page pls. Call the forge_prompt tool exactly once, then show me the refined prompt and the applied_techniques list." \
+  --mcp-config live-mcp.json --strict-mcp-config --allowedTools mcp__promptforge__forge_prompt
+```
+
+live-mcp.json env: PF_PROVIDER=custom PF_MODEL=mock-1 PF_BASE_URL=http://localhost:11435/v1 PF_DEBUG=1
+
+Mock log: 1 POST /v1/chat/completions (2897 bytes). Claude Code output:
+
+```
+Forge done. One tool call, result below.
+
+**Refined prompt**
+
+```
+Explain how a Chrome MV3 service worker differs from a background page to a beginner.
+Use one analogy, under 150 words, end with 3 bullet takeaways.
+```
+
+**Applied techniques**
+
+- clarity
+- output format
+- audience
+
+**Extra info from the tool**
+
+- Suggestion: add an example site.
+- Quality estimate: 28 before, 85 after.
+- Tokens: 11 before, 35 after.
+
+Say "run it" and I will answer the refined prompt, or tell me what to change first.
+```
