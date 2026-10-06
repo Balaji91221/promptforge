@@ -46,12 +46,17 @@
     "eval": "tsx evals/runner.ts",
     "dev:ext": "npm run dev --workspace apps/extension-browser",
     "clean": "rm -rf packages/*/dist packages/*/*.tsbuildinfo apps/*/dist apps/*/.next",
-    "e2e:mcp": "npm run build:engine && npm run build --workspace apps/mcp && tsx evals/e2e-mcp.ts"
+    "e2e:mcp": "npm run build:engine && npm run build --workspace apps/mcp && tsx evals/e2e-mcp.ts",
+    "deadcode": "knip"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@promptforge/core": "*",
+    "@promptforge/types": "*",
     "eslint": "^10.10.0",
     "globals": "^17.12.0",
+    "knip": "^5.0.0",
     "tsx": "^4.23.13",
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.70.0",

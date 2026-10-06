@@ -1,6 +1,6 @@
 // Remote Config Service (plan §11 — "the survival mechanism", Phase 2).
-// Serves the active versioned config (selectors, limits, pricing refs,
-// meta-prompts, templates) so platform/prompt changes ship WITHOUT an
+// Serves the active versioned config (selectors, limits, meta-prompts,
+// templates) so platform/prompt changes ship WITHOUT an
 // extension release. CDN- and client-cached; clients keep the newer version.
 import { db } from "../../db/client.js";
 

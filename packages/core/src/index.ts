@@ -49,4 +49,3 @@ export {
   InMemoryBackend,
   type KeyValueBackend,
 } from "./shared/store.js";
-export { ConfigLoader, type RemoteConfig } from "./shared/config-loader.js";

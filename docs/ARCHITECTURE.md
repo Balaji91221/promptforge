@@ -83,7 +83,6 @@ core/src/
 │   └── tokenizer.ts     ~4-chars/token estimate for the live counter
 └── shared/
     ├── store.ts         EventStore — records accept/edit/dismiss, computes G0 rate
-    └── config-loader.ts versioned remote config (not active yet)
 ```
 
 Every shell imports `refine()` from here and nothing else. Rewrite every shell
@@ -179,7 +178,7 @@ Skip these when getting oriented. They don't affect the rewrite feature itself:
   store. The extension's worker calls providers directly instead.
 - `apps/dashboard/`, `apps/landing/` — analytics view and marketing site.
 - `evals/` — test harnesses, not shipped.
-- `config/*.json` — bundled defaults for a future remote-config service.
+- `config/selectors.json` — bundled selector defaults served by the backend's `/api/config` route.
 
 ## Validation gates
 

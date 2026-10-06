@@ -16,6 +16,19 @@ and the project uses [Semantic Versioning](https://semver.org/).
   Claude Code. `npm run e2e:mcp` runs a real stdio round-trip against a mock
   model. Live-tested in Claude Code; other agents doc-verified.
   Debt: `apps/mcp/src/config.ts` mirrors `evals/runner.ts` `resolveConfig()`.
+- Backend dev server now routes the hosted-mode handlers (`/api/auth`,
+  `/api/config`, `/api/events`, `/api/orgs`, `/api/analytics/events`) that the
+  dashboard and the extension's sync client already target.
+- `npm run deadcode` (knip) with a `knip.json` that knows the extension's
+  manifest entry points.
+- Launch-ready README (why, install, status table, FAQ, roadmap, screenshots)
+  and `docs/LAUNCH.md` with launch and enhancement suggestions.
+
+### Removed
+
+- `ConfigLoader` from `@promptforge/core` and `config/pricing.json`: nothing
+  used either. Unused `@promptforge/types` dependency in `adapters` and
+  `extension-vscode`.
 
 - Paste mode in `refine()`: an instruction plus a large JSON array is split;
   only the instruction is rewritten, the data is appended by code. Fixes long

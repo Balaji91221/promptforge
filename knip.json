@@ -1,0 +1,30 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "ignore": [
+    "docs/spikes/**"
+  ],
+  "ignoreExportsUsedInFile": true,
+  "workspaces": {
+    ".": {
+      "entry": [
+        "evals/*.ts"
+      ]
+    },
+    "apps/extension-browser": {
+      "entry": [
+        "src/manifest.ts",
+        "src/background/index.ts",
+        "src/content/index.tsx",
+        "src/popup/index.ts",
+        "src/popup/index.html"
+      ]
+    },
+    "apps/backend": {
+      "entry": [
+        "api/**/*.ts"
+      ]
+    },
+    "apps/dashboard": {},
+    "apps/landing": {}
+  }
+}

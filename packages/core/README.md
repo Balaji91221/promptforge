@@ -32,7 +32,6 @@ if (out.status === "ok" && out.result) {
 | `optimizer/headroom.ts` | Optional Headroom proxy client and the shared `acceptCompression()` allowlist |
 | `metering/tokenizer.ts` | Fast token estimate for the live counter |
 | `shared/store.ts` | `EventStore` over a pluggable key-value backend; computes acceptance rate |
-| `shared/config-loader.ts` | Versioned remote config with bundled fallback |
 
 ## Rules
 

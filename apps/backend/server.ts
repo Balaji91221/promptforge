@@ -1,12 +1,18 @@
 // Minimal local dev server (plan §6: "a single serverless function"). Serves
 // the web-standard handlers over Node's http so the extension can hit
-// http://localhost:3000/api/rewrite during development. In production these
+// http://localhost:3000/api/rewrite during development, plus the hosted-mode
+// routes (auth, config, events, orgs, analytics) backed by the in-memory db. In production these
 // handlers deploy directly to an edge/serverless host — this file is dev-only.
 //
 //   NVIDIA_API_KEY=nvapi-… npm run dev --workspace apps/backend
 //
 import { createServer, type IncomingMessage } from "node:http";
 import rewrite from "./api/rewrite.js";
+import auth from "./api/auth/index.js";
+import config from "./api/config/index.js";
+import events from "./api/events/index.js";
+import orgs from "./api/orgs/index.js";
+import analyticsEvents from "./api/analytics/events.js";
 
 const PORT = Number(process.env.PORT ?? 3000);
 
@@ -27,6 +33,11 @@ async function toRequest(req: IncomingMessage): Promise<Request> {
 
 const routes: Record<string, (r: Request) => Promise<Response>> = {
   "/api/rewrite": rewrite,
+  "/api/auth": auth,
+  "/api/config": config,
+  "/api/events": events,
+  "/api/orgs": orgs,
+  "/api/analytics/events": analyticsEvents,
 };
 
 const server = createServer(async (req, res) => {
