@@ -35,3 +35,24 @@ Use one analogy, under 150 words, end with 3 bullet takeaways.
 
 Say "run it" and I will answer the refined prompt, or tell me what to change first.
 ```
+
+## Error path, real Ollama endpoint (same day)
+
+Ollama server was running from a deleted app bundle (llama-server binary missing). Env: PF_PROVIDER=ollama PF_MODEL=llama3.1:8b.
+Claude Code relayed the hint verbatim and did not retry, as the tool description instructs:
+
+```
+The forge_prompt call failed, so there is no refined prompt to show. Per the tool's contract I did not retry.
+
+**Error hint, verbatim:**
+
+```
+ollama 500: {"error":{"message":"error starting llama-server: llama-server binary not found (checked: /Applications/Ollama.app/Contents/Resources/llama-server, /Applications/Ollama.app/Contents/Resources/lib/ollama/llama-server, /Applications/Ollama.app/Contents/lib/ollama/llama-server, /Applications/Ollama.app/Contents/Resources/build/lib/ollama/llama-server, /Applications/Ollama.app/Contents/Resources/dist/darwin-arm64/lib/ollama/llama-server, /Applications/Ollama.app/Contents/Resources/dist/darwin_arm64/lib/ollama/llama-server, /Applications/Ollama.app/Contents/Resources/dist/darwin/llama-server, /build/lib/ollama/llama-server, /dist/darwin-arm64/lib/ollama/llama-server, /dist/darwin_arm64/lib/ollama/llama-server, /dist/darwin/llama-server). Run 'cmake -S llama/server --preset cpu && cmake --build --preset cpu' first ","type":"api_error","param":null,"code":null}}
+```
+
+- **What it means:** the MCP server reached Ollama, but the local Ollama install is missing its inference binary (llama-server). This is an Ollama install problem, not a PromptForge bug.
+- **Likely fix:** reinstall or update Ollama.app, then confirm with `ollama run <model> "hi"` before re-running forge.
+- **Not delivered:** refined prompt, applied_techniques, suggestions. All three come from the model response, which never happened.
+
+Once Ollama is healthy, say "forge" again and I will make the single call.
+```

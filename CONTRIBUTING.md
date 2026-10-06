@@ -45,6 +45,28 @@ npm run build --workspace apps/extension-browser
 Then open `chrome://extensions`, enable *Developer mode*, choose *Load unpacked*,
 and select `apps/extension-browser/dist`.
 
+## All commands
+
+| Command | What it does |
+|---|---|
+| `npm run lint` | ESLint (flat config, `typescript-eslint`) |
+| `npm run typecheck` | `tsc -b` on the engine, then every app shell |
+| `npm test` / `npm run test:watch` | Vitest unit tests against source (engine packages + `apps/mcp`) |
+| `npm run e2e` | Full pipeline against a mock provider and a mock Headroom proxy |
+| `npm run e2e:mcp` | MCP server over real stdio against a mock model |
+| `npm run e2e:headroom` | 500-item paste through the built-in engine, plus the Headroom proxy when one is running |
+| `npm run eval` | Meta-prompt eval suite; dry run without a key |
+| `npm run build:engine` | Compile `types`, `core`, `adapters` to `dist/` |
+| `npm run build --workspace apps/extension-browser` | Build the Chrome extension to `apps/extension-browser/dist` |
+| `npm run build --workspace apps/mcp` | Build the MCP server to `apps/mcp/dist` |
+| `npm run dev:ext` | Vite dev server for the extension |
+| `npm run dev --workspace apps/backend` | Optional local hosted-mode proxy on :3000 |
+| `npm run dev --workspace apps/landing` | Marketing site on :3000 |
+| `npm run deadcode` | knip: unused files, exports and dependencies (config in `knip.json`) |
+| `npm run clean` | Remove all build output |
+
+Copy `.env.example` to `.env` for the eval suite and the optional proxy. The extension never reads it; configure it in the popup. The MCP server reads `PF_*` from the agent's config, not from `.env`.
+
 ## Where things live
 
 | Path | What it is | Change it when… |
@@ -53,7 +75,8 @@ and select `apps/extension-browser/dist`.
 | `packages/adapters` | Per-site DOM selectors (Claude, ChatGPT, Gemini, Grok, Perplexity) | …a chat site changes its HTML |
 | `packages/types` | Shared TypeScript contracts | …the JSON shape between packages changes |
 | `apps/extension-browser` | Chrome MV3 shell | …the *surface* changes (button, popup, overlay) |
-| `apps/cli`, `apps/extension-vscode` | Terminal and editor shells | …those surfaces change |
+| `apps/mcp` | MCP server: `forge_prompt` for Claude Code, Codex, Gemini CLI, Cursor, Windsurf | …the agent-facing tool or its config changes |
+| `apps/cli`, `apps/extension-vscode` | Legacy terminal shim and editor shell | …those surfaces change |
 | `apps/backend` | Optional hosted-mode proxy | …hosted mode changes |
 | `evals/` | Eval cases, eval runner, end-to-end harness | …you add a regression case |
 
