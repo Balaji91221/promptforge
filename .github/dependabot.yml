@@ -20,6 +20,19 @@ updates:
       types:
         patterns:
           - "@types/*"
+    ignore:
+      # typescript-eslint 8.x supports TypeScript < 6.1; a TS major bump breaks `npm install`.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      # The apps are on React 18. react-dom / @types/react-dom must move together with react.
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/react-dom"
+        update-types: ["version-update:semver-major"]
     commit-message:
       prefix: "chore(deps)"
   - package-ecosystem: github-actions

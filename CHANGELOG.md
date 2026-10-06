@@ -72,6 +72,13 @@ and the project uses [Semantic Versioning](https://semver.org/).
 - Unused `compress()` / `CompressCall` exports from `@promptforge/core`
   (replaced by `compressPayload()` / `PayloadCompressor`; zero callers).
 
+### Fixed
+
+- Dependency drift from automated bumps: TypeScript 7 (unsupported by
+  typescript-eslint 8, broke `npm install`) and react-dom 19 next to react 18
+  (broke typecheck in dashboard and landing). Both pinned back; Dependabot now
+  ignores major bumps of typescript, react, react-dom and their types.
+
 ## [0.1.0] - 2026-07-15
 
 ### Added
