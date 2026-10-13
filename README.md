@@ -229,3 +229,7 @@ Local-first by design. The text you are typing is read only from the input box o
 ## License
 
 [MIT](LICENSE) © Balaji91221
+
+---
+
+Explore more of my work: [latest open-source tools](https://github.com/Balaji91221#latest-open-source-tools) · [recent projects](https://github.com/Balaji91221#recent-work).
