@@ -14,7 +14,7 @@ PromptForge sits on the input box of Claude, ChatGPT, Gemini, Grok and Perplexit
 [![MCP](https://img.shields.io/badge/MCP-server-8B5CF6.svg)](apps/mcp)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-14B8A6.svg)](CONTRIBUTING.md)
 
-[Install](#install-in-2-minutes) · [Coding agents](#coding-agents-claude-code-codex-gemini-cli-cursor-windsurf) · [Status](#status) · [FAQ](#faq) · [Architecture](#architecture) · [Contributing](CONTRIBUTING.md)
+[Why PromptForge](#why-promptforge) · [Install](#install-in-2-minutes) · [Coding agents](#coding-agents-claude-code-codex-gemini-cli-cursor-windsurf) · [Status](#status) · [FAQ](#faq) · [Architecture](#architecture) · [Contributing](CONTRIBUTING.md)
 
 <img src="docs/assets/forge-chatgpt.png" alt="PromptForge overlay on chatgpt.com showing a refined prompt, what changed, and coach tips" width="900">
 
@@ -22,7 +22,7 @@ PromptForge sits on the input box of Claude, ChatGPT, Gemini, Grok and Perplexit
 
 </div>
 
-## Why
+## Why PromptForge
 
 - **Most prompts are under-specified.** "Fix my resume" has no audience, no format, no success criteria. The model guesses, you re-ask, you lose a turn.
 - **Prompt guides don't stick.** You read them once, then type the same way as before. PromptForge applies the techniques *where you type* and tells you which ones it used, so the habit forms.
@@ -43,6 +43,15 @@ you type               ⚒ Forge                   your model              you d
 - **Bring your own model.** Seven providers including a free tier (NVIDIA NIM) and fully local Ollama.
 - **Long pastes stay intact and get smaller.** Paste a big JSON array; only your instruction is rewritten and the data is re-encoded on-device into a compact table, about half the tokens with every value kept.
 - **Works in coding agents too.** The same engine is an [MCP server](apps/mcp) for Claude Code, Codex CLI, Gemini CLI, Cursor and Windsurf.
+
+## Example workflow
+
+1. Write a request in a supported chat input, such as “explain how a browser extension service worker differs from a background page.”
+2. Click **Forge prompt** to request a structured rewrite using your configured provider.
+3. Review the proposed prompt, the explanation of what changed, and the optional details you could add.
+4. Accept, edit, or dismiss the result. You keep control over the text that is sent to the chat.
+
+The browser extension suits people who want help while composing a request. The MCP server exposes the same engine to coding-agent clients; the core packages are the implementation to explore when extending rewrite behavior.
 
 ## Install in 2 minutes
 
@@ -182,7 +191,7 @@ apps/
   backend/            optional hosted-mode proxy
   dashboard/, landing/  optional Next.js dashboard and site
 evals/                meta-prompt eval suite + end-to-end harnesses
-docs/                 architecture tour, plans, spike write-ups
+docs/                 architecture tour, integration guides, spike write-ups
 ```
 
 Guardrails baked in: opt-in button only · length gate (no model call on trivial input) · original always kept, diff always shown · 30 s provider timeout · minimal host permissions, never `<all_urls>` · deflection guard with a deterministic fallback · pasted data never edited or sent to the rewrite model.
