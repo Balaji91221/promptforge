@@ -56,7 +56,7 @@
     "@promptforge/types": "*",
     "eslint": "^10.12.0",
     "globals": "^17.13.0",
-    "knip": "^6.41.0",
+    "knip": "^6.42.1",
     "tsx": "^4.23.15",
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.71.1",
